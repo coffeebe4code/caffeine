@@ -1,6 +1,9 @@
 # Custom
-target/*
-obj/*
+target
+obj
+.d
+lib
+include
 
 # # Prerequisites
 *.d

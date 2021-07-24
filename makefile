@@ -26,8 +26,10 @@ INCS := $(patsubst $(SRCDIR)/%.h,$(INCDIR)/%.h,$(wildcard $(SRCDIR)/*/*.h))
 IMMM := $(patsubst $(OBJDIR)/%.o,$(LIBDIR)/%.a,$(foreach LIB,$(LLIST),$(filter $(OBJDIR)/$(LIB)/$(LIB).o,$(OBJS))))
 LIBS := $(foreach PRE,$(LLIST),$(subst $(PRE)/,lib,$(filter $(LIBDIR)/$(PRE)/$(PRE).a,$(IMMM))))
 LINK := $(foreach LIB,$(LLIST),-l$(LIB))
-TSTS := $(wildcard $(TSTDIR)/*.c)
+TSTO := $(patsubst $(TSTDIR)/%.c,$(OBJDIR)/$(TSTDIR)/%.o, $(wildcard $(TSTDIR)/*.c))
 TSTE := $(foreach LIB,$(LLIST),$(TGTDIR)/$(LIB).exe)
+DEPS := $(patsubst $(OBJDIR)/%.o,$(DEPDIR)/%.d,$(OBJS))
+DEPT := $(patsubst $(TSTDIR)/%.o),$(DEPDIR)/$(TSTDIR)/%.d,$(TSTO))
 
 .PHONY: all 
 all: $(TGTDIR)/$(TGT)
@@ -41,20 +43,29 @@ tests: $(TSTE)
 		./$${test}; \
 	done
 	
-$(TSTE): $(OBJS)
+$(TSTE): $(TSTO) | $(OBJS)
 	@mkdir -p $(@D)
-	$(CC) -o $@ $(OBJS) $(filter $(TSTDIR)/$(basename $(notdir $@)).c, $(TSTS))
+	$(CC) -o $@ $(OBJS) $(filter $(OBJDIR)/$(TSTDIR)/$(basename $(notdir $@)).o, $(TSTO))
+
+$(OBJDIR)/$(TSTDIR)/%.o: $(TSTDIR)/%.c
+	@mkdir -p $(@D)
+	$(CC) -o $@ -c $<
 
 $(LIBS): $(OBJS)
 	@mkdir -p $(@D)
 	$(AR) rcs $@ $(filter $(subst lib,$(OBJDIR)/, $(basename $(notdir $@)))/%.o, $(OBJS))
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.c
+$(OBJDIR)/%.o: $(SRCDIR)/%.c | folders
 	@mkdir -p $(@D)
 	$(CC) -o $@ -c $<
 
+-include $(DEPS)
+-include $(DEPT)
+
 .PHONY: folders
 folders:
+	@echo $(DEPS)
+	@echo $(DEPT)
 	mkdir -p $(DIRS)
 
 .PHONY: clean
