@@ -14,8 +14,7 @@ INCDIR = include
 SRCDIR = src
 TSTDIR = tests
 LIBDIR = lib
-DEPDIR = .d
-DIRS = $(OBJDIR) $(TGTDIR) $(INCDIR) $(LIBDIR) $(DEPDIR)
+DIRS = $(OBJDIR) $(TGTDIR) $(INCDIR) $(LIBDIR) 
 
 # Target name
 TGT = caffeine
@@ -28,8 +27,8 @@ LIBS := $(foreach PRE,$(LLIST),$(subst $(PRE)/,lib,$(filter $(LIBDIR)/$(PRE)/$(P
 LINK := $(foreach LIB,$(LLIST),-l$(LIB))
 TSTO := $(patsubst $(TSTDIR)/%.c,$(OBJDIR)/$(TSTDIR)/%.o, $(wildcard $(TSTDIR)/*.c))
 TSTE := $(foreach LIB,$(LLIST),$(TGTDIR)/$(LIB).exe)
-DEPS := $(patsubst $(OBJDIR)/%.o,$(DEPDIR)/%.d,$(OBJS))
-DEPT := $(patsubst $(TSTDIR)/%.o),$(DEPDIR)/$(TSTDIR)/%.d,$(TSTO))
+DEPS := $(OBJS:.o=.d)
+DEPT := $(TSTO:.o=.d)
 
 .PHONY: all 
 all: $(TGTDIR)/$(TGT)
@@ -43,13 +42,17 @@ tests: $(TSTE)
 		./$${test}; \
 	done
 	
-$(TSTE): $(TSTO) | $(OBJS)
+$(TSTE): $(TSTO) $(DEPT) | $(OBJS)
 	@mkdir -p $(@D)
 	$(CC) -o $@ $(OBJS) $(filter $(OBJDIR)/$(TSTDIR)/$(basename $(notdir $@)).o, $(TSTO))
 
 $(OBJDIR)/$(TSTDIR)/%.o: $(TSTDIR)/%.c
 	@mkdir -p $(@D)
 	$(CC) -o $@ -c $<
+
+$(OBJDIR)/$(TSTDIR)/%.d: $(TSTDIR)/%.c
+	@mkdir -p $(@D)
+	$(CC) -MM -MG $< $(CFLAGS)
 
 $(LIBS): $(OBJS)
 	@mkdir -p $(@D)
@@ -59,15 +62,14 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c | folders
 	@mkdir -p $(@D)
 	$(CC) -o $@ -c $<
 
--include $(DEPS)
--include $(DEPT)
+$(OBJDIR)/%.d: $(SRCDIR)/%.c | folders
+	@mkdir -p $(@D)
+	$(CC) -MM -MG $< $(CFLAGS)
 
 .PHONY: folders
 folders:
-	@echo $(DEPS)
-	@echo $(DEPT)
 	mkdir -p $(DIRS)
-
+	
 .PHONY: clean
 clean:
 	rm -rf $(DIRS)
