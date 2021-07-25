@@ -18,7 +18,7 @@ DIRS = $(OBJDIR) $(TGTDIR) $(INCDIR) $(LIBDIR)
 
 # Target name
 TGT = caffeine
-LLIST = utils middleware
+LLIST = utils middleware server
 
 OBJS := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(wildcard $(SRCDIR)/*/*.c))
 INCS := $(patsubst $(SRCDIR)/%.h,$(INCDIR)/%.h,$(wildcard $(SRCDIR)/*/*.h))
