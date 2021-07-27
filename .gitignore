@@ -4,6 +4,7 @@ obj
 .d
 lib
 include
+*.swp
 
 # # Prerequisites
 *.d
