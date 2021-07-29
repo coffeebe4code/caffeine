@@ -1,5 +1,4 @@
 #pragma once
 
-typedef int server_t;
-
-server_t server_init();
+void server_construct();
+void server_run();
