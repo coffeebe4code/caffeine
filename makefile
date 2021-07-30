@@ -1,7 +1,9 @@
 # Variables
 CC = gcc
 AR = ar
-CFLAGS = -Wall -O0 -std=c11 -DDEBUG -g
+CFLAGS = -Wall -O0 -std=c11 -g
+CPPFLAGS = -DDEBUG
+LFLAGS = -lpthread
 ODUMP = objdump
 ODFLAGS = -d
 OBJCOPY = objcopy
@@ -34,7 +36,7 @@ DEPT := $(TSTO:.o=.d)
 all: $(TGTDIR)/$(TGT)
 
 $(TGTDIR)/$(TGT): $(LIBS) | tests
-	$(CC) -o $@ bench/main.c $(LIBS) 
+	$(CC) $(CFLAGS) -o $@ bench/main.c $(LIBS)
 
 tests: $(TSTE)
 	for test in $^ ; do \
@@ -44,11 +46,11 @@ tests: $(TSTE)
 	
 $(TSTE): $(TSTO) $(DEPT) | $(OBJS)
 	@mkdir -p $(@D)
-	$(CC) -o $@ $(OBJS) $(filter $(OBJDIR)/$(TSTDIR)/$(basename $(notdir $@)).o, $(TSTO))
+	$(CC) $(CFLAGS) -o $@ $(filter $(OBJDIR)/$(basename $(notdir $@))/$(basename $(notdir $@)).o,$(OBJS)) $(filter $(OBJDIR)/$(TSTDIR)/$(basename $(notdir $@)).o,$(TSTO)) $(LFLAGS)
 
 $(OBJDIR)/$(TSTDIR)/%.o: $(TSTDIR)/%.c
 	@mkdir -p $(@D)
-	$(CC) -o $@ -c $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 
 $(OBJDIR)/$(TSTDIR)/%.d: $(TSTDIR)/%.c
 	@mkdir -p $(@D)
@@ -60,7 +62,7 @@ $(LIBS): $(OBJS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c | folders
 	@mkdir -p $(@D)
-	$(CC) -o $@ -c $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 
 $(OBJDIR)/%.d: $(SRCDIR)/%.c | folders
 	@mkdir -p $(@D)

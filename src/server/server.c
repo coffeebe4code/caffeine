@@ -8,9 +8,17 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <pthread.h>
+#include "../debug/debug.h"
 
 static struct sockaddr_in sa;
 static int socket_fd;
+static int conn_count;
+
+void * handle_controller() {
+  debug_print("handle_controller called %s\n", "");
+  return NULL;
+}
 
 void server_init() {
   socket_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -53,6 +61,7 @@ void server_init() {
 void server_construct() {}
 
 void server_run() {
+  conn_count = 0;
   for (;;) {
     int connect_fd = accept(socket_fd, NULL, NULL);
 
@@ -63,13 +72,9 @@ void server_run() {
         exit(EXIT_FAILURE);
       }
     }
-
-    /* perform read write operations ...
-    read(connect_fd, buff, size)
-    */
-
+    else {
+    }
     close(connect_fd);
   }
-
   close(socket_fd);
 }
