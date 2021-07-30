@@ -13,7 +13,7 @@
 
 static struct sockaddr_in sa;
 static int socket_fd;
-static int conn_count;
+static pthread_t server_id;
 
 void * handle_controller() {
   debug_print("handle_controller called %s\n", "");
@@ -60,8 +60,7 @@ void server_init() {
 
 void server_construct() {}
 
-void server_run() {
-  conn_count = 0;
+void * server_loop() {
   for (;;) {
     int connect_fd = accept(socket_fd, NULL, NULL);
 
@@ -76,5 +75,17 @@ void server_run() {
     }
     close(connect_fd);
   }
+  pthread_exit(NULL);
+}
+
+void server_run() {
+  pthread_create(&server_id, NULL, &server_loop, NULL);
+  pthread_join(server_id, NULL);
+}
+
+void server_shutdown() {
+  shutdown(socket_fd, SHUT_WR);
+  pthread_cancel(server_id);
+  shutdown(socket_fd, SHUT_RD);
   close(socket_fd);
 }

@@ -50,7 +50,7 @@ $(TSTE): $(TSTO) $(DEPT) | $(OBJS)
 
 $(OBJDIR)/$(TSTDIR)/%.o: $(TSTDIR)/%.c
 	@mkdir -p $(@D)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $< $(LFLAGS)
 
 $(OBJDIR)/$(TSTDIR)/%.d: $(TSTDIR)/%.c
 	@mkdir -p $(@D)
