@@ -9,18 +9,20 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <pthread.h>
-#include "../debug/debug.h"
+#include <signal.h>
 
 static struct sockaddr_in sa;
 static int socket_fd;
 static pthread_t server_id;
+static int * clients;
 
 void * handle_controller() {
-  debug_print("handle_controller called %s\n", "");
   return NULL;
 }
 
 void server_init() {
+  signal(SIGTERM, server_shutdown);
+  
   socket_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
   if (socket_fd == -1) {
@@ -88,4 +90,5 @@ void server_shutdown() {
   pthread_cancel(server_id);
   shutdown(socket_fd, SHUT_RD);
   close(socket_fd);
+  exit(EXIT_SUCCESS);
 }
