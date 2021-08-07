@@ -20,7 +20,7 @@ DIRS = $(OBJDIR) $(TGTDIR) $(INCDIR) $(LIBDIR)
 
 # Target name
 TGT = caffeine
-LLIST = utils middleware server
+LLIST = utils requester responder header server
 
 OBJS := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(wildcard $(SRCDIR)/*/*.c))
 INCS := $(patsubst $(SRCDIR)/%.h,$(INCDIR)/%.h,$(wildcard $(SRCDIR)/*/*.h))
@@ -35,8 +35,12 @@ DEPT := $(TSTO:.o=.d)
 .PHONY: all 
 all: $(TGTDIR)/$(TGT)
 
-$(TGTDIR)/$(TGT): $(LIBS) | tests
-	$(CC) $(CFLAGS) -o $@ bench/main.c $(LIBS)
+$(TGTDIR)/$(TGT): $(LIBS) | tests 
+	$(CC) $(CFLAGS) -o $@ bench/main.c $(LIBS) -lpthread
+
+##includes: $(INCS)
+##	for inc in $^; do \
+##		cp -u $${inc} $(INCDIR)/$(basename $(notdir $${inc}
 
 tests: $(TSTE)
 	for test in $^ ; do \

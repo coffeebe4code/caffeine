@@ -14,7 +14,7 @@
 static struct sockaddr_in sa;
 static int socket_fd;
 static pthread_t *server_ids;
-static int max_conns = SOMAXCONN;
+static int max_conns = 990;
 static int *client_fds;
 
 void *handle_controller() { return NULL; }
@@ -57,8 +57,10 @@ void server_init() {
     close(socket_fd);
     exit(EXIT_FAILURE);
   }
-  client_fds = (int *)calloc(max_conns, sizeof(int *));
+  client_fds = calloc(max_conns, sizeof(int *));
 }
+
+void server_options(server_opts opts) {}
 
 void server_construct() {}
 
@@ -70,11 +72,23 @@ void *server_loop(void *client_id) {
       if (errno != EWOULDBLOCK) {
         perror("accept failed");
         close(socket_fd);
-        exit(EXIT_FAILURE);
+        break;
       }
     } else {
+      char buffer[4096];
+      while (1) {
+        int rd = read(id, buffer, sizeof(buffer));
+        if (rd == 0) {
+
+        } else {
+          if (errno != EWOULDBLOCK) {
+            perror("read failed");
+            break;
+          }
+        }
+      }
+      id = close(id);
     }
-    id = close(id);
   }
   pthread_exit(NULL);
 }
@@ -94,6 +108,7 @@ void server_shutdown() {
   shutdown(socket_fd, SHUT_WR);
   for (int i = 0; i < max_conns; i++) {
     pthread_cancel(server_ids[i]);
+    printf("conn value %d\n", client_fds[i]);
     if (client_fds[i] != 0 || client_fds[i] != -1) {
       close(client_fds[i]);
     }
