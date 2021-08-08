@@ -1,3 +1,7 @@
+#include "../src/server/server.h"
+#include <stdio.h>
+
 int main() {
-  return 42;
+  server_init();
+  server_run();
 }

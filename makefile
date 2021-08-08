@@ -1,7 +1,9 @@
 # Variables
 CC = gcc
 AR = ar
-CFLAGS = -Wall -O0 -std=c11 -DDEBUG -g
+CFLAGS = -Wall -O0 -std=c11 -g
+CPPFLAGS = -DDEBUG
+LFLAGS = -lpthread
 ODUMP = objdump
 ODFLAGS = -d
 OBJCOPY = objcopy
@@ -18,7 +20,7 @@ DIRS = $(OBJDIR) $(TGTDIR) $(INCDIR) $(LIBDIR)
 
 # Target name
 TGT = caffeine
-LLIST = utils middleware
+LLIST = utils requester responder header server
 
 OBJS := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(wildcard $(SRCDIR)/*/*.c))
 INCS := $(patsubst $(SRCDIR)/%.h,$(INCDIR)/%.h,$(wildcard $(SRCDIR)/*/*.h))
@@ -33,8 +35,12 @@ DEPT := $(TSTO:.o=.d)
 .PHONY: all 
 all: $(TGTDIR)/$(TGT)
 
-$(TGTDIR)/$(TGT): $(LIBS) | tests
-	$(CC) -o $@ bench/main.c $(LIBS) 
+$(TGTDIR)/$(TGT): $(LIBS) | tests 
+	$(CC) $(CFLAGS) -o $@ bench/main.c $(LIBS) -lpthread
+
+##includes: $(INCS)
+##	for inc in $^; do \
+##		cp -u $${inc} $(INCDIR)/$(basename $(notdir $${inc}
 
 tests: $(TSTE)
 	for test in $^ ; do \
@@ -44,11 +50,11 @@ tests: $(TSTE)
 	
 $(TSTE): $(TSTO) $(DEPT) | $(OBJS)
 	@mkdir -p $(@D)
-	$(CC) -o $@ $(OBJS) $(filter $(OBJDIR)/$(TSTDIR)/$(basename $(notdir $@)).o, $(TSTO))
+	$(CC) $(CFLAGS) -o $@ $(filter $(OBJDIR)/$(basename $(notdir $@))/$(basename $(notdir $@)).o,$(OBJS)) $(filter $(OBJDIR)/$(TSTDIR)/$(basename $(notdir $@)).o,$(TSTO)) $(LFLAGS)
 
 $(OBJDIR)/$(TSTDIR)/%.o: $(TSTDIR)/%.c
 	@mkdir -p $(@D)
-	$(CC) -o $@ -c $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $< $(LFLAGS)
 
 $(OBJDIR)/$(TSTDIR)/%.d: $(TSTDIR)/%.c
 	@mkdir -p $(@D)
@@ -60,7 +66,7 @@ $(LIBS): $(OBJS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c | folders
 	@mkdir -p $(@D)
-	$(CC) -o $@ -c $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 
 $(OBJDIR)/%.d: $(SRCDIR)/%.c | folders
 	@mkdir -p $(@D)
