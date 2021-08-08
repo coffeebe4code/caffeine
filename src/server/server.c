@@ -3,7 +3,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
-#include "time.h"
 #include <netinet/tcp.h>
 #include <pthread.h>
 #include <signal.h>
@@ -80,21 +79,13 @@ void *server_loop(void *client_id) {
       char buf[4096];
       int req_count = 0;
       int buf_len = 0;
-      clock_t start, end;
       while (1) {
         int rd = read(id, buf + buf_len, sizeof(buf));
-        start = clock();
         if (rd > 0) {
           int wr = write(id,
                          "HTTP/1.1 200 OK\r\nServer: "
                          "caffeine\r\nContent-Length: 5\r\n\r\nHello",
                          71);
-          req_count++;
-          if (req_count == 2) {
-            end = clock();
-            debug_print("time taken total%f\n", ((double) end - start)/CLOCKS_PER_SEC);
-            break;
-          }
         } else if (rd == 0) {
           break;
         }
