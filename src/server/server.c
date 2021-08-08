@@ -1,7 +1,9 @@
 #include "./server.h"
+#include "../debug/debug.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include "time.h"
 #include <netinet/tcp.h>
 #include <pthread.h>
 #include <signal.h>
@@ -75,20 +77,34 @@ void *server_loop(void *client_id) {
         break;
       }
     } else {
-      char buffer[4096];
+      char buf[4096];
+      int req_count = 0;
+      int buf_len = 0;
+      clock_t start, end;
       while (1) {
-        int rd = read(id, buffer, sizeof(buffer));
-        if (rd == 0) {
-
-        } else {
-          if (errno != EWOULDBLOCK) {
-            perror("read failed");
+        int rd = read(id, buf + buf_len, sizeof(buf));
+        start = clock();
+        if (rd > 0) {
+          int wr = write(id,
+                         "HTTP/1.1 200 OK\r\nServer: "
+                         "caffeine\r\nContent-Length: 5\r\n\r\nHello",
+                         71);
+          req_count++;
+          if (req_count == 2) {
+            end = clock();
+            debug_print("time taken total%f\n", ((double) end - start)/CLOCKS_PER_SEC);
             break;
           }
+        } else if (rd == 0) {
+          break;
+        }
+        else if (errno != EWOULDBLOCK) {
+          perror("read failed");
+          break;
         }
       }
-      id = close(id);
     }
+    id = close(id);
   }
   pthread_exit(NULL);
 }
@@ -108,7 +124,6 @@ void server_shutdown() {
   shutdown(socket_fd, SHUT_WR);
   for (int i = 0; i < max_conns; i++) {
     pthread_cancel(server_ids[i]);
-    printf("conn value %d\n", client_fds[i]);
     if (client_fds[i] != 0 || client_fds[i] != -1) {
       close(client_fds[i]);
     }
