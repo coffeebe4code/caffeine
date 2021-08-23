@@ -1,7 +1,7 @@
 #include "./header.h"
 #include "../debug/debug.h"
 #ifdef __SIMD__
-#include <x86intrin.h>
+#include <nmmintrin.h>
 #endif
 
 #define likely(x) __builtin_expect(!!(x), 1)
@@ -15,9 +15,9 @@ void parse_with_simd(const char *buffer, const int buffer_len) {
   const char * value = "GET ";
   __m128i u_str = _mm_loadu_si128((const __m128i *)value);
   __m128i loaded = _mm_loadu_si128((const __m128i *)buffer);
-  int has_value = _mm_cmpestrc(loaded, 4, u_str, 4,
+  int not_equal = _mm_cmpestrc(loaded, 4, u_str, 4,
                                _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH);
-  debug_print("has value %d\n", has_value);
+  debug_print("has value %d\n", not_equal);
   //if (unlikely(!has_value)) {
   //  u_str.str = "POST ";
   //  has_value = _mm_cmpestrc(loaded, 5, u_str.vec, 5,
