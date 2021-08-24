@@ -10,13 +10,24 @@
 enum METHOD method = UNSUPPORTED;
 int error = 0;
 char route[255];
+const char * get = "GET ";
+const char * put = "PUT ";
+const char * post = "POST";
+const char * del = "DELE";
+const char * opt = "OPTI";
+const char * pat = "PATC";
+const char * safe_boundary = "56789ABCDEF0";
 
 void parse_with_simd(const char *buffer, const int buffer_len) {
-  const char * value = "GET ";
-  __m128i u_str = _mm_loadu_si128((const __m128i *)value);
-  __m128i loaded = _mm_loadu_si128((const __m128i *)buffer);
-  int not_equal = _mm_cmpestrc(loaded, 4, u_str, 4,
-                               _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH);
+  register __m128i xmm0, xmm1, xmm2;
+  register unsigned int eax;
+
+  xmm0 = _mm_loadu_si128((const __m128i *)buffer);
+  xmm1 = _mm_loadu_si128((const __m128i *)get);
+  xmm2 = _mm_cmpeq_epi8(xmm0,xmm1);
+  eax = _mm_movemask_epi8(xmm2);
+  int not_equal = (eax & 0x0F) == 0x0F;
+
   debug_print("has value %d\n", not_equal);
   //if (unlikely(!has_value)) {
   //  u_str.str = "POST ";
