@@ -14,4 +14,4 @@ typedef struct header_t {
   
 } header_t;
 
-void parse_with_simd(const char *buffer, const int buffer_len);
+enum METHOD parse_method(const char *buffer, const int buffer_len);
