@@ -79,8 +79,8 @@ void *server_loop(void *client_id) {
       char buf[4096];
       int buf_len = 0;
       while (1) {
-        read(id, buf + buf_len, sizeof(buf));
-        if (id > 0) {
+        int rd = read(id, buf + buf_len, sizeof(buf));
+        if (rd > 0) {
           int wr = write(id,
                          "HTTP/1.1 200 OK\r\nServer: "
                          "caffeine\r\nContent-Length: 5\r\n\r\nHello",
