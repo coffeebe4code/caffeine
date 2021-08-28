@@ -77,19 +77,21 @@ void *server_loop(void *client_id) {
       }
     } else {
       char buf[4096];
-      int req_count = 0;
       int buf_len = 0;
       while (1) {
-        int rd = read(id, buf + buf_len, sizeof(buf));
-        if (rd > 0) {
+        read(id, buf + buf_len, sizeof(buf));
+        if (id > 0) {
           int wr = write(id,
                          "HTTP/1.1 200 OK\r\nServer: "
                          "caffeine\r\nContent-Length: 5\r\n\r\nHello",
                          71);
-        } else if (rd == 0) {
+          if (wr == -1) {
+            perror("write failed");
+            break;
+          }
+        } else if (id == 0) {
           break;
-        }
-        else if (errno != EWOULDBLOCK) {
+        } else if (errno != EWOULDBLOCK) {
           perror("read failed");
           break;
         }
