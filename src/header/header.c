@@ -9,7 +9,8 @@
 
 enum METHOD method = UNSUPPORTED;
 int error = 0;
-char route[255];
+static int route_start = 0;
+static int route_end = 0;
 const char get[16] __attribute__((aligned(16))) = "GET ";
 const char put[16] __attribute__((aligned(16))) = "PUT ";
 const char post[16] __attribute__((aligned(16))) = "POST";
@@ -17,6 +18,9 @@ const char del[16] __attribute__((aligned(16))) = "DELE";
 const char opt[16] __attribute__((aligned(16))) = "OPTI";
 const char pat[16] __attribute__((aligned(16))) = "PATC";
 
+void parse_route_slow(const char *buffer, const int buffer_len) {
+
+}
 void parse_method_slow(const char *buffer, const int buffer_len) {
 
 }
@@ -25,7 +29,7 @@ static inline int cmp(const __m128i *method, __m128i xmm0) {
   register __m128i xmm1, xmm2;
   register unsigned int eax;
 
-  xmm1 = _mm_load_si128(method);
+  xmm1 = _mm_loadu_si128(method);
   xmm2 = _mm_cmpeq_epi8(xmm0, xmm1);
   eax = _mm_movemask_epi8(xmm2);
   int equal = (eax & 0x0F) == 0x0F;
@@ -71,6 +75,12 @@ void parse_method_simd(const char *buffer, const int buffer_len) {
     }
   }
 }
+
+void parse_route_simd(const char * buffer, const int buffer_len) {
+  if(buffer_len > 16) {
+      
+  }
+}
 #endif
 enum METHOD parse_method(const char *buffer, const int buffer_len) {
   #ifdef __SIMD__
@@ -80,6 +90,16 @@ enum METHOD parse_method(const char *buffer, const int buffer_len) {
 #endif
     return method;
 }
+
+void parse_route(const char *buffer, const int buffer_len) {
+
+#ifdef __SIMD__
+  parse_route_simd(buffer, buffer_len);
+#else
+  parse_route_slow();
+#endif
+}
+
 void header_parse(const char *buffer, const int buffer_len) {
   enum METHOD method = parse_method(buffer, buffer_len);
  
