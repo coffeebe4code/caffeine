@@ -1,2 +1,2 @@
 # caffeine
-highly opinionated caffeine induced web server
+highly opinionated caffeine induced web server framework
