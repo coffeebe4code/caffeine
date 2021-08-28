@@ -86,7 +86,6 @@ enum METHOD parse_method(const char *buffer, const int buffer_len) {
   #ifdef __SIMD__
     parse_method_simd(buffer, buffer_len);
 #else
-    parse_method_slow(buffer, buffer_en);
 #endif
     return method;
 }
@@ -96,7 +95,6 @@ void parse_route(const char *buffer, const int buffer_len) {
 #ifdef __SIMD__
   parse_route_simd(buffer, buffer_len);
 #else
-  parse_route_slow();
 #endif
 }
 
