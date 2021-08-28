@@ -1,8 +1,8 @@
 # Variables
-CC = clang
+CC = gcc
 AR = ar
-CFLAGS = -Wall -O3 -std=c11 -g -msse4.2
-CPPFLAGS = -D__SIMD__ -D__PERF__
+CFLAGS = -Werror -O3 -std=c11 -g -msse4.2
+CPPFLAGS = -D__SIMD__
 
 export CC
 export AR

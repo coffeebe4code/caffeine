@@ -1,8 +1,4 @@
 # Variables
-#CC = gcc
-#AR = ar
-#CFLAGS = -Wall -O0 -std=c11 -g -msse4.2
-#CPPFLAGS = -DDEBUG -D__SIMD__ -D__PERF__ 
 LFLAGS = -lpthread
 ODUMP = objdump
 ODFLAGS = -d
