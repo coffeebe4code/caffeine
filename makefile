@@ -39,10 +39,12 @@ $(TGTDIR)/$(TGT): $(LIBS) | tests
 ##		cp -u $${inc} $(INCDIR)/$(basename $(notdir $${inc}
 
 tests: $(TSTE)
+	err=0; \
 	for test in $^ ; do \
 		chmod +x ./$${test} ; \
-		./$${test}; \
-	done
+		./$${test} || err=$$?; \
+	done; \
+	exit $$err
 	
 $(TSTE): $(TSTO) $(DEPT) | $(OBJS)
 	@mkdir -p $(@D)

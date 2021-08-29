@@ -1,4 +1,5 @@
 #include "./header.h"
+#include <string.h>
 #include "../debug/debug.h"
 #ifdef __SIMD__
 #include <nmmintrin.h>
@@ -19,10 +20,43 @@ const char opt[16] __attribute__((aligned(16))) = "OPTI";
 const char pat[16] __attribute__((aligned(16))) = "PATC";
 
 void parse_route_slow(const char *buffer, const int buffer_len) {
-
 }
-void parse_method_slow(const char *buffer, const int buffer_len) {
 
+void parse_method_slow(const char *buffer, const int buffer_len) {
+  if (buffer_len >= 16) {
+    int equal = memcmp(buffer, get, 4);
+    if (unlikely(equal != 0)) {
+      equal = memcmp(buffer, post, 4);
+      if (unlikely(equal != 0)) {
+        equal = memcmp(buffer, put, 4);
+        if (unlikely(equal != 0)) {
+          equal = memcmp(buffer, pat, 4);
+          if (unlikely(equal != 0)) {
+            equal = memcmp(buffer, del, 4);
+            if (unlikely(equal != 0)) {
+              equal = memcmp(buffer, opt , 4);
+              if (unlikely(equal != 0)) {
+                error = 1;
+                method = UNSUPPORTED;
+              } else {
+                method = OPTIONS;
+              }
+            } else {
+              method = DELETE;
+            }
+          } else {
+            method = PATCH;
+          }
+        } else {
+          method = PUT;
+        }
+      } else {
+        method = POST;
+      }
+    } else {
+      method = GET;
+    }
+  }
 }
 #ifdef __SIMD__
 static inline int cmp(const __m128i *method, __m128i xmm0) {
@@ -76,18 +110,18 @@ void parse_method_simd(const char *buffer, const int buffer_len) {
   }
 }
 
-void parse_route_simd(const char * buffer, const int buffer_len) {
-  if(buffer_len > 16) {
-      
+void parse_route_simd(const char *buffer, const int buffer_len) {
+  if (buffer_len > 16) {
   }
 }
 #endif
 enum METHOD parse_method(const char *buffer, const int buffer_len) {
-  #ifdef __SIMD__
-    parse_method_simd(buffer, buffer_len);
+#ifdef __SIMD__
+  parse_method_simd(buffer, buffer_len);
 #else
+  parse_method_slow(buffer, buffer_len);
 #endif
-    return method;
+  return method;
 }
 
 void parse_route(const char *buffer, const int buffer_len) {
@@ -100,5 +134,4 @@ void parse_route(const char *buffer, const int buffer_len) {
 
 void header_parse(const char *buffer, const int buffer_len) {
   enum METHOD method = parse_method(buffer, buffer_len);
- 
 }
