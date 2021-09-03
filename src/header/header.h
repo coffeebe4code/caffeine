@@ -14,8 +14,8 @@ typedef struct header_t {
   
 } header_t;
 
-static int route_start;
-static int route_end;
-
+int route_start;
+int route_end;
+METHOD method;
 void parse_route(const char *buffer, const int buffer_len);
 enum METHOD parse_method(const char *buffer, const int buffer_len);

@@ -4,9 +4,10 @@
 #include <time.h>
 
 void test_methods();
-
+void test_routes();
 int main() {
   test_methods();
+  test_routes();
 #ifdef __PERF__
   clock_t start, stop;
   double cpu_time_used;
@@ -17,9 +18,30 @@ int main() {
   stop = clock();
   cpu_time_used = ((double) (stop - start)) / CLOCKS_PER_SEC;
   printf("test_methods took %f seconds\n",cpu_time_used);
+  start = clock();
+
+  for(int i = 0; i < 1000000; i++) {
+    test_routes();
+  }
+  stop = clock();
+  cpu_time_used = ((double) (stop - start)) / CLOCKS_PER_SEC;
+  printf("test_routes took %f seconds\n",cpu_time_used);
 #endif
 }
 
+void test_routes() {
+  route_start = 4;
+  parse_route("GET / HTTP/1.1\r\n", 16);
+  assert(route_end == 4);
+  parse_route("GET /0000_0000_/ HTTP/1.1\r\n", 27);
+  assert(route_end == 15);
+
+  method = GET;
+  parse_route("GET /this/is/a/test/to/the/end", 32);
+  assert(method == UNSUPPORTED);
+  parse_route("GET /this/is/a/long/route/designed?to=test&speed=null HTTP/1.1\r\n", 64);
+  assert(route_end == 52); 
+}
 
 void test_methods() {
   METHOD get = parse_method("GET / HTTP/1.1\r\n", 16);

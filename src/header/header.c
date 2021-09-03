@@ -10,8 +10,8 @@
 
 enum METHOD method = UNSUPPORTED;
 int error = 0;
-static int route_start = 0;
-static int route_end = 0;
+int route_start = 0;
+int route_end = 0;
 const char get[16] __attribute__((aligned(16))) = "GET ";
 const char put[16] __attribute__((aligned(16))) = "PUT ";
 const char post[16] __attribute__((aligned(16))) = "POST";
@@ -20,6 +20,14 @@ const char opt[16] __attribute__((aligned(16))) = "OPTI";
 const char pat[16] __attribute__((aligned(16))) = "PATC";
 
 void parse_route_slow(const char *buffer, const int buffer_len) {
+  char * start_buf = buffer + route_start;
+  char * end = strchr(start_buf, ' ');
+  if(end != NULL) {
+    route_end = (int)(end - buffer) - 1; 
+  }
+  else {
+    method = UNSUPPORTED;
+  }
 }
 
 void parse_method_slow(const char *buffer, const int buffer_len) {
@@ -40,21 +48,27 @@ void parse_method_slow(const char *buffer, const int buffer_len) {
                 method = UNSUPPORTED;
               } else {
                 method = OPTIONS;
+                route_start = 8;
               }
             } else {
               method = DELETE;
+              route_start = 7;
             }
           } else {
             method = PATCH;
+            route_start = 6;
           }
         } else {
           method = PUT;
+          route_start = 4;
         }
       } else {
         method = POST;
+        route_start = 5;
       }
     } else {
       method = GET;
+      route_start = 4;
     }
   }
 }
@@ -91,28 +105,32 @@ void parse_method_simd(const char *buffer, const int buffer_len) {
                 method = UNSUPPORTED;
               } else {
                 method = OPTIONS;
+                route_start = 8;
               }
             } else {
-              method = PATCH;
+              method = DELETE;
+              route_start = 7;
             }
           } else {
-            method = DELETE;
+            method = PATCH;
+            route_start = 6;
           }
         } else {
           method = PUT;
+          route_start = 4;
         }
       } else {
         method = POST;
+        route_start = 5;
       }
     } else {
       method = GET;
+      route_start = 4;
     }
   }
 }
 
 void parse_route_simd(const char *buffer, const int buffer_len) {
-  if (buffer_len > 16) {
-  }
 }
 #endif
 enum METHOD parse_method(const char *buffer, const int buffer_len) {
@@ -129,6 +147,7 @@ void parse_route(const char *buffer, const int buffer_len) {
 #ifdef __SIMD__
   parse_route_simd(buffer, buffer_len);
 #else
+  parse_route_slow(buffer, buffer_len);
 #endif
 }
 
