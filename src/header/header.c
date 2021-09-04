@@ -143,9 +143,13 @@ void parse_route_simd(const char *buffer, const int buffer_len) {
     xmm1 = _mm_loadu_si128((const __m128i *)buffer + curr_index);
     xmm2 = _mm_cmpeq_epi8(xmm0, xmm1);
     eax = _mm_movemask_epi8(xmm2);
-    ebx = _BitScanForward32(&index_simd,&eax);
+    index_simd = __builtin_ffsll(eax);
+    if(index_simd) {
+      route_end += curr_index;
+    }
     length -= 16;
     curr_index += 16;
+    buffer+= 16;
   }
   if (length - route_start > 0 && route_end == 0) {
     parse_route_slow(buffer + curr_index,length);
