@@ -1,8 +1,9 @@
 #include "./header.h"
-#include <string.h>
 #include "../debug/debug.h"
+#include <string.h>
 #ifdef __SIMD__
 #include <nmmintrin.h>
+#include <immintrin.h>
 #endif
 
 #define likely(x) __builtin_expect(!!(x), 1)
@@ -18,14 +19,14 @@ const char post[16] __attribute__((aligned(16))) = "POST";
 const char del[16] __attribute__((aligned(16))) = "DELE";
 const char opt[16] __attribute__((aligned(16))) = "OPTI";
 const char pat[16] __attribute__((aligned(16))) = "PATC";
+const char spaces[16] __attribute__((aligned(16))) = "                ";
 
 void parse_route_slow(const char *buffer, const int buffer_len) {
-  char * start_buf = buffer + route_start;
-  char * end = strchr(start_buf, ' ');
-  if(end != NULL) {
-    route_end = (int)(end - buffer) - 1; 
-  }
-  else {
+  const char *start_buf = buffer + route_start;
+  char *end = strchr(start_buf, ' ');
+  if (end != NULL) {
+    route_end = (int)(end - buffer) - 1;
+  } else {
     method = UNSUPPORTED;
   }
 }
@@ -42,7 +43,7 @@ void parse_method_slow(const char *buffer, const int buffer_len) {
           if (unlikely(equal != 0)) {
             equal = memcmp(buffer, del, 4);
             if (unlikely(equal != 0)) {
-              equal = memcmp(buffer, opt , 4);
+              equal = memcmp(buffer, opt, 4);
               if (unlikely(equal != 0)) {
                 error = 1;
                 method = UNSUPPORTED;
@@ -131,6 +132,24 @@ void parse_method_simd(const char *buffer, const int buffer_len) {
 }
 
 void parse_route_simd(const char *buffer, const int buffer_len) {
+  int length = buffer_len;
+  int index_simd;
+  int curr_index = route_start;
+  register __m128i xmm0, xmm1, xmm2;
+  register unsigned int eax;
+  register unsigned char ebx;
+  xmm0 = _mm_loadu_si128((const __m128i *)spaces);
+  while (length - route_start >= 16) {
+    xmm1 = _mm_loadu_si128((const __m128i *)buffer + curr_index);
+    xmm2 = _mm_cmpeq_epi8(xmm0, xmm1);
+    eax = _mm_movemask_epi8(xmm2);
+    ebx = _BitScanForward32(&index_simd,&eax);
+    length -= 16;
+    curr_index += 16;
+  }
+  if (length - route_start > 0 && route_end == 0) {
+    parse_route_slow(buffer + curr_index,length);
+  }
 }
 #endif
 enum METHOD parse_method(const char *buffer, const int buffer_len) {
