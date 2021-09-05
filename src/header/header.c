@@ -9,10 +9,36 @@
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
 
-enum METHOD method = UNSUPPORTED;
-int error = 0;
-int route_start = 0;
-int route_end = 0;
+enum METHOD * methods;
+int * route_starts;
+int * route_ends;
+char ** headers;
+int * lengths;
+
+void header_reset(const int index) {
+  methods[index] = UNSUPPORTED;
+  route_starts[index] = 0;
+  route_ends[index] = 0;
+  lengths[index] = 0;
+  free(headers[index]);
+}
+
+header_t header_go(int index, const char * buffer, const int buffer_len) {
+  header_t header;
+  header.index = index;
+  lengths[index] = buffer_len;
+  headers[index] = buffer;
+  return header;  
+}
+
+void headers_init(const int total_possible) {
+  methods = malloc(sizeof(enum METHOD) * total_possible);
+  route_starts = malloc(sizeof(int) * total_possible);
+  route_ends = malloc(sizeof(int) * total_possible);
+  lengths = malloc(sizeof(int) * total_possible);
+  headers = malloc(sizeof(char *) * total_possible);
+}
+
 const char get[16] __attribute__((aligned(16))) = "GET ";
 const char put[16] __attribute__((aligned(16))) = "PUT ";
 const char post[16] __attribute__((aligned(16))) = "POST";
@@ -21,17 +47,17 @@ const char opt[16] __attribute__((aligned(16))) = "OPTI";
 const char pat[16] __attribute__((aligned(16))) = "PATC";
 const char spaces[17] __attribute__((aligned(16))) = "                \0";
 
-void parse_route_slow(const char *buffer, const int buffer_len) {
-  const char *start_buf = buffer + route_start;
+void parse_route_slow(int index) {
+  const char *start_buf = *&(headers[index]) + route_starts[index];
   char *end = strchr(start_buf, ' ');
   if (end != NULL) {
-    route_end = (int)(end - buffer) - 1;
+    route_ends[index] = (int)(end - headers[index]) - 1;
   } else {
-    method = UNSUPPORTED;
+    methods[index] = UNSUPPORTED;
   }
-}
+};
 
-void parse_method_slow(const char *buffer, const int buffer_len) {
+void parse_method_slow(int index, const char *buffer, const int buffer_len) {
   if (buffer_len >= 16) {
     int equal = memcmp(buffer, get, 4);
     if (unlikely(equal != 0)) {
@@ -45,31 +71,30 @@ void parse_method_slow(const char *buffer, const int buffer_len) {
             if (unlikely(equal != 0)) {
               equal = memcmp(buffer, opt, 4);
               if (unlikely(equal != 0)) {
-                error = 1;
-                method = UNSUPPORTED;
+                methods[index] = UNSUPPORTED;
               } else {
-                method = OPTIONS;
-                route_start = 8;
+                methods[index] = OPTIONS;
+                route_starts[index] = 8;
               }
             } else {
-              method = DELETE;
-              route_start = 7;
+              methods[index] = DELETE;
+              route_starts[index] = 7;
             }
           } else {
-            method = PATCH;
-            route_start = 6;
+            methods[index] = PATCH;
+            route_starts[index] = 6;
           }
         } else {
-          method = PUT;
-          route_start = 4;
+          methods[index] = PUT;
+          route_starts[index] = 4;
         }
       } else {
-        method = POST;
-        route_start = 5;
+        methods[index] = POST;
+        route_starts[index] = 5;
       }
     } else {
-      method = GET;
-      route_start = 4;
+      methods[index] = GET;
+      route_starts[index] = 4;
     }
   }
 }
@@ -85,10 +110,10 @@ static inline int cmp(const __m128i *method, __m128i xmm0) {
   return equal;
 }
 
-void parse_method_simd(const char *buffer, const int buffer_len) {
-  if (buffer_len >= 16) {
+void parse_method_simd(const int index) {
+  if (lengths[index] >= 16) {
     register __m128i xmm0;
-    xmm0 = _mm_loadu_si128((const __m128i *)buffer);
+    xmm0 = _mm_loadu_si128((const __m128i *)headers[index]);
     int equal = cmp((const __m128i *)get, xmm0);
 
     if (unlikely(!equal)) {
@@ -102,38 +127,37 @@ void parse_method_simd(const char *buffer, const int buffer_len) {
             if (unlikely(!equal)) {
               equal = cmp((const __m128i *)opt, xmm0);
               if (unlikely(!equal)) {
-                error = 1;
-                method = UNSUPPORTED;
+                methods[index] = UNSUPPORTED;
               } else {
-                method = OPTIONS;
-                route_start = 8;
+                methods[index] = OPTIONS;
+                route_starts[index] = 8;
               }
             } else {
-              method = DELETE;
-              route_start = 7;
+              methods[index] = DELETE;
+              route_starts[index] = 7;
             }
           } else {
-            method = PATCH;
-            route_start = 6;
+            methods[index] = PATCH;
+            route_starts[index] = 6;
           }
         } else {
-          method = PUT;
-          route_start = 4;
+          methods[index] = PUT;
+          route_starts[index] = 4;
         }
       } else {
-        method = POST;
-        route_start = 5;
+        methods[index] = POST;
+        route_starts[index] = 5;
       }
     } else {
-      method = GET;
-      route_start = 4;
+      methods[index] = GET;
+      route_starts[index] = 4;
     }
   }
 }
 
-void parse_route_simd(const char *buffer, const int buffer_len) {
+void parse_route_simd(const int index, const char *buffer, const int buffer_len) {
   int index_simd;
-  int curr_index = route_start;
+  int curr_index = route_starts[index];
   register __m128i xmm0, xmm1, xmm2;
   register unsigned int eax;
   register unsigned char ebx;
@@ -144,39 +168,35 @@ void parse_route_simd(const char *buffer, const int buffer_len) {
     eax = _mm_movemask_epi8(xmm2);
     index_simd = __builtin_ffsll(eax);
     if (index_simd) {
-      route_end = curr_index + index_simd - 2;
+      route_ends[index] = curr_index + index_simd - 2;
       break;
     }
     curr_index += 16;
   }
-  if (buffer_len - curr_index > 0 && route_end == 0) {
+  if (buffer_len - curr_index > 0 && route_ends[index] == 0) {
     char *end = strchr(buffer + curr_index, ' ');
     if (end != NULL) {
-      route_end = (int)(end - buffer) - 1;
+      route_ends[index] = (int)(end - buffer) - 1;
     } else {
-      method = UNSUPPORTED;
+      methods[index] = UNSUPPORTED;
     }
   }
 }
 #endif
-enum METHOD parse_method(const char *buffer, const int buffer_len) {
+void parse_method(const int index) {
 #ifdef __SIMD__
-  parse_method_simd(buffer, buffer_len);
+  parse_method_simd(index);
 #else
-  parse_method_slow(buffer, buffer_len);
-#endif
-  return method;
-}
-
-void parse_route(const char *buffer, const int buffer_len) {
-
-#ifdef __SIMD__
-  parse_route_simd(buffer, buffer_len);
-#else
-  parse_route_slow(buffer, buffer_len);
+  parse_method_slow(index);
 #endif
 }
 
-void header_parse(const char *buffer, const int buffer_len) {
-  enum METHOD method = parse_method(buffer, buffer_len);
+void parse_route(const int index) {
+
+#ifdef __SIMD__
+  parse_route_slow(index);
+#else
+  parse_route_slow(index);
+#endif
 }
+
