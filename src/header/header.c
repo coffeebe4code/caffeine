@@ -2,8 +2,8 @@
 #include "../debug/debug.h"
 #include <string.h>
 #ifdef __SIMD__
-#include <nmmintrin.h>
 #include <immintrin.h>
+#include <nmmintrin.h>
 #endif
 
 #define likely(x) __builtin_expect(!!(x), 1)
@@ -19,7 +19,7 @@ const char post[16] __attribute__((aligned(16))) = "POST";
 const char del[16] __attribute__((aligned(16))) = "DELE";
 const char opt[16] __attribute__((aligned(16))) = "OPTI";
 const char pat[16] __attribute__((aligned(16))) = "PATC";
-const char spaces[16] __attribute__((aligned(16))) = "                ";
+const char spaces[17] __attribute__((aligned(16))) = "                \0";
 
 void parse_route_slow(const char *buffer, const int buffer_len) {
   const char *start_buf = buffer + route_start;
@@ -81,6 +81,7 @@ static inline int cmp(const __m128i *method, __m128i xmm0) {
   xmm1 = _mm_loadu_si128(method);
   xmm2 = _mm_cmpeq_epi8(xmm0, xmm1);
   eax = _mm_movemask_epi8(xmm2);
+  debug_print("method eax %d\n",eax);
   int equal = (eax & 0x0F) == 0x0F;
   return equal;
 }
@@ -96,9 +97,9 @@ void parse_method_simd(const char *buffer, const int buffer_len) {
       if (unlikely(!equal)) {
         equal = cmp((const __m128i *)put, xmm0);
         if (unlikely(!equal)) {
-          equal = cmp((const __m128i *)del, xmm0);
+          equal = cmp((const __m128i *)pat, xmm0);
           if (unlikely(!equal)) {
-            equal = cmp((const __m128i *)pat, xmm0);
+            equal = cmp((const __m128i *)del, xmm0);
             if (unlikely(!equal)) {
               equal = cmp((const __m128i *)opt, xmm0);
               if (unlikely(!equal)) {
@@ -132,27 +133,35 @@ void parse_method_simd(const char *buffer, const int buffer_len) {
 }
 
 void parse_route_simd(const char *buffer, const int buffer_len) {
-  int length = buffer_len;
   int index_simd;
   int curr_index = route_start;
   register __m128i xmm0, xmm1, xmm2;
   register unsigned int eax;
   register unsigned char ebx;
-  xmm0 = _mm_loadu_si128((const __m128i *)spaces);
-  while (length - route_start >= 16) {
-    xmm1 = _mm_loadu_si128((const __m128i *)buffer + curr_index);
+  while (buffer_len - curr_index >= 16) {
+    debug_print("route_start %d\nindex_simd %d\nbuff %s\nspaces :%s:\n",
+                route_start, index_simd, buffer + curr_index, spaces);
+    xmm0 = _mm_loadu_si128((const __m128i *)buffer + curr_index);
+    xmm1 = _mm_loadu_si128((const __m128i *)spaces);
     xmm2 = _mm_cmpeq_epi8(xmm0, xmm1);
     eax = _mm_movemask_epi8(xmm2);
+    debug_print("eax %d\n", eax);
     index_simd = __builtin_ffsll(eax);
-    if(index_simd) {
-      route_end += curr_index;
+    debug_print("index_simd %d\n", index_simd);
+    if (index_simd) {
+      route_end = curr_index + index_simd - 1;
+      break;
     }
-    length -= 16;
     curr_index += 16;
-    buffer+= 16;
   }
-  if (length - route_start > 0 && route_end == 0) {
-    parse_route_slow(buffer + curr_index,length);
+  if (buffer_len - curr_index > 0 && route_end == 0) {
+    debug_print("buffer manual %s\n", buffer + curr_index);
+    char *end = strchr(buffer + curr_index, ' ');
+    if (end != NULL) {
+      route_end = (int)(end - buffer) - 1;
+    } else {
+      method = UNSUPPORTED;
+    }
   }
 }
 #endif

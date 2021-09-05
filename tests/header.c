@@ -33,12 +33,19 @@ void test_routes() {
   route_start = 4;
   parse_route("GET / HTTP/1.1\r\n", 16);
   assert(route_end == 4);
+  
+  route_end = 0;
   parse_route("GET /0000_0000_/ HTTP/1.1\r\n", 27);
   assert(route_end == 15);
-
+  
+  route_end = 0;
   method = GET;
   parse_route("GET /this/is/a/test/to/the/end", 32);
   assert(method == UNSUPPORTED);
+  
+  route_end = 0;
+  parse_route("GET /this/is/a/long/route/designed?to=test&speed=null HTTP/1.1\r\n", 64);
+  route_end = 0;
   parse_route("GET /this/is/a/long/route/designed?to=test&speed=null HTTP/1.1\r\n", 64);
   assert(route_end == 52); 
 }
