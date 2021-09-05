@@ -30,6 +30,7 @@ int main() {
 }
 
 void test_routes() {
+  route_end = 0;
   route_start = 4;
   parse_route("GET / HTTP/1.1\r\n", 16);
   assert(route_end == 4);
@@ -45,9 +46,10 @@ void test_routes() {
   
   route_end = 0;
   parse_route("GET /this/is/a/long/route/designed?to=test&speed=null HTTP/1.1\r\n", 64);
+  assert(route_end == 52);
   route_end = 0;
-  parse_route("GET /this/is/a/long/route/designed?to=test&speed=null HTTP/1.1\r\n", 64);
-  assert(route_end == 52); 
+  parse_route("GET /this/is/a/long/route/designed?to=test&speed=null&more=more HTTP/1.1\r\n", 74);
+  assert(route_end == 62); 
 }
 
 void test_methods() {

@@ -81,7 +81,6 @@ static inline int cmp(const __m128i *method, __m128i xmm0) {
   xmm1 = _mm_loadu_si128(method);
   xmm2 = _mm_cmpeq_epi8(xmm0, xmm1);
   eax = _mm_movemask_epi8(xmm2);
-  debug_print("method eax %d\n",eax);
   int equal = (eax & 0x0F) == 0x0F;
   return equal;
 }
@@ -139,23 +138,18 @@ void parse_route_simd(const char *buffer, const int buffer_len) {
   register unsigned int eax;
   register unsigned char ebx;
   while (buffer_len - curr_index >= 16) {
-    debug_print("route_start %d\nindex_simd %d\nbuff %s\nspaces :%s:\n",
-                route_start, index_simd, buffer + curr_index, spaces);
-    xmm0 = _mm_loadu_si128((const __m128i *)buffer + curr_index);
+    xmm0 = _mm_loadu_si128((const __m128i *)(buffer + curr_index));
     xmm1 = _mm_loadu_si128((const __m128i *)spaces);
     xmm2 = _mm_cmpeq_epi8(xmm0, xmm1);
     eax = _mm_movemask_epi8(xmm2);
-    debug_print("eax %d\n", eax);
     index_simd = __builtin_ffsll(eax);
-    debug_print("index_simd %d\n", index_simd);
     if (index_simd) {
-      route_end = curr_index + index_simd - 1;
+      route_end = curr_index + index_simd - 2;
       break;
     }
     curr_index += 16;
   }
   if (buffer_len - curr_index > 0 && route_end == 0) {
-    debug_print("buffer manual %s\n", buffer + curr_index);
     char *end = strchr(buffer + curr_index, ' ');
     if (end != NULL) {
       route_end = (int)(end - buffer) - 1;
