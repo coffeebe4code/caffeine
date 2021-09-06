@@ -1,40 +1,71 @@
+#include "../src/debug/debug.h"
 #include "../src/header/header.h"
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
+#include <string.h>
 #include <time.h>
 
 void test_methods();
+void test_routes();
 
 int main() {
+  headers_init(1);
   test_methods();
-#ifdef __PERF__
-  clock_t start, stop;
-  double cpu_time_used;
-  start = clock();
-  for(int i = 0; i < 1000000; i++) {
-    test_methods();
-  }
-  stop = clock();
-  cpu_time_used = ((double) (stop - start)) / CLOCKS_PER_SEC;
-  printf("test_methods took %f seconds\n",cpu_time_used);
-#endif
+  test_routes();
 }
 
+void test_routes() {
+  header_reset(0);
+  header_go(0, "GET / HTTP/1.1\r\n", 16);
+  header_t val = header_get(0);
+  assert(val.route_end == 4);
+
+  header_reset(0);
+  header_go(0, "GET /0000_0000_/ HTTP/1.1\r\n", 27);
+  val = header_get(0);
+  assert(val.route_end == 15);
+
+  header_reset(0);
+  header_go(0, "GET /this/is/a/test/to/the/end", 32);
+  val = header_get(0);
+  assert(val.method == UNSUPPORTED);
+
+  header_reset(0);
+  header_go(
+      0, "GET /this/is/a/long/route/designed?to=test&speed=null HTTP/1.1\r\n",
+      64444);
+  val = header_get(0);
+  assert(val.route_end == 52);
+}
 
 void test_methods() {
-  METHOD get = parse_method("GET / HTTP/1.1\r\n", 16);
-  METHOD put = parse_method("PUT / HTTP/1.1\r\n", 16);
-  METHOD opt = parse_method("OPTIONS / HTTP/1.1\r\n", 20);
-  METHOD post = parse_method("POST / HTTP/1.1\r\n", 17);
-  METHOD pat = parse_method("PATCH / HTTP/1.1\r\n", 18);
-  METHOD del = parse_method("DELETE / HTTP/1.1\r\n", 19);
-  METHOD unsup = parse_method("UNSUP / HTTP/1.1\r\n", 18);
+  header_reset(0);
+  header_go(0, "GET / HTTP/1.1\r\n", 16);
+  header_t val = header_get(0);
+  assert(val.method == GET);
+
+  header_go(0, "POST / HTTP/1.1\r\n", 17);
+  val = header_get(0);
+  assert(val.method == POST);
   
-  assert(get == GET);
-  assert(put == PUT);
-  assert(opt == OPTIONS);
-  assert(post == POST);
-  assert(pat == PATCH);
-  assert(del == DELETE);
-  assert(unsup == UNSUPPORTED);
+  header_go(0, "PUT / HTTP/1.1\r\n", 16);
+  val = header_get(0);
+  assert(val.method == PUT);
+  
+  header_go(0, "OPTIONS / HTTP/1.1\r\n", 20);
+  val = header_get(0);
+  assert(val.method == OPTIONS);
+  
+  header_go(0, "PATCH / HTTP/1.1\r\n", 18);
+  val = header_get(0);
+  assert(val.method == PATCH);
+  
+  header_go(0, "DELETE / HTTP/1.1\r\n", 19);
+  val = header_get(0);
+  assert(val.method == DELETE);
+  
+  header_go(0, "UNSUP / HTTP/1.1\r\n", 18);
+  val = header_get(0);
+  assert(val.method == UNSUPPORTED);
+
 }
