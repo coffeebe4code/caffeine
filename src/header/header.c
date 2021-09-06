@@ -1,5 +1,6 @@
 #include "./header.h"
 #include "../debug/debug.h"
+#include <stdlib.h>
 #include <string.h>
 #ifdef __SIMD__
 #include <immintrin.h>
@@ -12,7 +13,7 @@
 enum METHOD * methods;
 int * route_starts;
 int * route_ends;
-char ** headers;
+const char ** headers;
 int * lengths;
 
 void header_reset(const int index) {
@@ -20,15 +21,25 @@ void header_reset(const int index) {
   route_starts[index] = 0;
   route_ends[index] = 0;
   lengths[index] = 0;
-  free(headers[index]);
 }
 
-header_t header_go(int index, const char * buffer, const int buffer_len) {
-  header_t header;
-  header.index = index;
+header_t header_get(int index) {
+  header_t header = {
+    .index = index,
+    .route_start = route_starts[index],
+    .route_end = route_ends[index],
+    .header = headers[index],
+    .buffer_len = lengths[index],
+    .method = methods[index]
+  };
+  return header;
+}
+
+void header_go(int index, const char * buffer, const int buffer_len) {
   lengths[index] = buffer_len;
   headers[index] = buffer;
-  return header;  
+  parse_method(index);
+  parse_route(index);
 }
 
 void headers_init(const int total_possible) {
@@ -57,19 +68,19 @@ void parse_route_slow(int index) {
   }
 };
 
-void parse_method_slow(int index, const char *buffer, const int buffer_len) {
-  if (buffer_len >= 16) {
-    int equal = memcmp(buffer, get, 4);
+void parse_method_slow(int index) {
+  if (lengths[index] >= 16) {
+    int equal = memcmp(headers[index], get, 4);
     if (unlikely(equal != 0)) {
-      equal = memcmp(buffer, post, 4);
+      equal = memcmp(headers[index], post, 4);
       if (unlikely(equal != 0)) {
-        equal = memcmp(buffer, put, 4);
+        equal = memcmp(headers[index], put, 4);
         if (unlikely(equal != 0)) {
-          equal = memcmp(buffer, pat, 4);
+          equal = memcmp(headers[index], pat, 4);
           if (unlikely(equal != 0)) {
-            equal = memcmp(buffer, del, 4);
+            equal = memcmp(headers[index], del, 4);
             if (unlikely(equal != 0)) {
-              equal = memcmp(buffer, opt, 4);
+              equal = memcmp(headers[index], opt, 4);
               if (unlikely(equal != 0)) {
                 methods[index] = UNSUPPORTED;
               } else {
