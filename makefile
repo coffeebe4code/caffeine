@@ -16,7 +16,7 @@ DIRS = $(OBJDIR) $(TGTDIR) $(INCDIR) $(LIBDIR)
 
 # Target name
 TGT = caffeine
-LLIST = utils requester responder header server
+LLIST = utils requester responder header server barista
 
 OBJS := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(wildcard $(SRCDIR)/*/*.c))
 INCS := $(patsubst $(SRCDIR)/%.h,$(INCDIR)/%.h,$(wildcard $(SRCDIR)/*/*.h))
