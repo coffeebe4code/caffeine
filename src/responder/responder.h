@@ -1,4 +1,4 @@
-#include "../header/header.h"
+#pragma once
 
 typedef struct responders {
     
