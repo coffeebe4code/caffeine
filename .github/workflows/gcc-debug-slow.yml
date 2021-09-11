@@ -1,7 +1,5 @@
-name: final
+name: gcc-debug-slow
 on:
-  push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
 jobs:
@@ -10,4 +8,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: make
-      run: make -j4 -f final.mk
+      run: make -j4 -f gcc-debug-slow.mk

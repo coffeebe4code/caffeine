@@ -3,8 +3,8 @@
 #include "stdlib.h"
 
 METHOD * methods;
-char * routes;
-typedef responder_t * (*FUNCS)(requester_t *, const char *, const int);
+char ** routes;
+typedef responder_t (*FUNCS)(requester_t *, const char *, const int);
 FUNCS * execs;
 int len = 0;
 int cap = 25;
@@ -22,6 +22,20 @@ void barista_add(METHOD method, char * route, responder_t (* func)(requester_t, 
     execs = realloc(execs, sizeof(FUNCS));
   }
   methods[len] = method;
-  strcpy(routes[len], route);
+  char * ptr = malloc(sizeof(char) * strlen(route));
+  strcpy(ptr, route);
+  routes[len] = ptr;
 
+  execs[len] = func;
+
+  len++;
+}
+
+void barista_free() {
+  free(methods);
+  free(execs);
+  for(int i = 0; i < len; i++) {
+    free(routes[i]);
+  }
+  free(routes);
 }
