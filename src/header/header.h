@@ -25,3 +25,4 @@ void header_reset(const int index);
 void header_go(int index, const char * buffer, const int buffer_len);
 void parse_route(int index);
 void parse_method(int index);
+void headers_free();

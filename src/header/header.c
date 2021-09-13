@@ -211,3 +211,10 @@ void parse_route(const int index) {
 #endif
 }
 
+void headers_free() {
+  free(methods);
+  free(route_starts);
+  free(route_ends);
+  free(lengths);
+  free(headers);
+}
