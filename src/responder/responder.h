@@ -28,9 +28,13 @@ typedef enum CODE {
 } CODE;
 
 typedef struct responder_t {
-
+  char * header;
+  char * body;
+  int free_body;
+  int free_header;
 } responder_t;
 
-void responder_add_default(CODE code, header_t * header, const char * buffer);
+void responder_init();
+void responder_add_default(CODE code, char * header, char * buffer);
 void responder_free(responder_t responder);
 responder_t responder_get_default(CODE code);
