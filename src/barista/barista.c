@@ -1,4 +1,5 @@
 #include "./barista.h"
+#include "../../src/responder/responder.h"
 #include "stdlib.h"
 #include <string.h>
 
@@ -7,54 +8,55 @@
 
 METHOD *methods;
 char **routes;
-typedef responder_t (*FUNCS)(header_t);
+typedef responder_t (*FUNCS)(header_t, responder_t *);
 FUNCS *execs;
-int len = 0;
-int cap = 25;
+int barista_len = 0;
+int barista_cap = 25;
 
 void barista_add(METHOD method, char *route,
-                 responder_t (*func)(header_t)) {
-  if (len == 0) {
-    methods = malloc(sizeof(METHOD) * cap);
-    routes = malloc(sizeof(const char *) * cap);
-    execs = malloc(sizeof((*func)) * cap);
+                 responder_t (*func)(header_t,responder_t *)) {
+  if (barista_len == 0) {
+    methods = malloc(sizeof(METHOD) * barista_cap);
+    routes = malloc(sizeof(const char *) * barista_cap);
+    execs = malloc(sizeof((*func)) * barista_cap);
   }
-  if (cap == len) {
-    cap *= 2;
-    methods = realloc(methods, sizeof(METHOD) * cap);
-    routes = realloc((void *)routes, sizeof(const char *) * cap);
+  if (barista_cap == barista_len) {
+    barista_cap *= 2;
+    methods = realloc(methods, sizeof(METHOD) * barista_cap);
+    routes = realloc((void *)routes, sizeof(const char *) * barista_cap);
     execs = realloc(execs, sizeof(FUNCS));
   }
-  methods[len] = method;
+  methods[barista_len] = method;
   char *ptr = malloc(sizeof(char) * strlen(route));
   strcpy(ptr, route);
-  routes[len] = ptr;
-  execs[len] = func;
-  len++;
+  routes[barista_len] = ptr;
+  execs[barista_len] = func;
+  barista_len++;
 }
 
 void barista_free() {
   free(methods);
   free(execs);
-  for (int i = 0; i < len; i++) {
+  for (int i = 0; i < barista_len; i++) {
     free(routes[i]);
   }
   free(routes);
 }
 
-responder_t barista_exec(const int index, const char *buffer,
-                         const int buffer_len) {
+void barista_exec(const int index, const char *buffer,
+                         const int buffer_len, responder_t *responder) {
   header_go(index, buffer, buffer_len);
   header_t header = header_get(index);
-  for (int i = 0; i < len; i++) {
+  for (int i = 0; i < barista_len; i++) {
     if (likely(header.method == methods[i])) {
       int tocheck = header.route_end - header.route_start;
       const char *head_buf = header.header;
       int equal = memcmp(&head_buf[header.route_start], routes[i], tocheck);
       if (likely(equal)) {
-        return execs[i](header);
+        execs[i](header, responder);
+        return;
       }
     }
   }
-  return NULL;
+  responder_get_default(_404_Not_Found, &responder);
 }

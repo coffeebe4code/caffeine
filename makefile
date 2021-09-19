@@ -25,18 +25,12 @@ LIBS := $(foreach PRE,$(LLIST),$(subst $(PRE)/,lib,$(filter $(LIBDIR)/$(PRE)/$(P
 LINK := $(foreach LIB,$(LLIST),-l$(LIB))
 TSTO := $(patsubst $(TSTDIR)/%.c,$(OBJDIR)/$(TSTDIR)/%.o, $(wildcard $(TSTDIR)/*.c))
 TSTE := $(foreach LIB,$(LLIST),$(TGTDIR)/$(LIB).exe)
-DEPS := $(OBJS:.o=.d)
-DEPT := $(TSTO:.o=.d)
 
 .PHONY: all 
 all: $(TGTDIR)/$(TGT)
 
 $(TGTDIR)/$(TGT): $(LIBS) | tests 
 	$(CC) $(CFLAGS) -o $@ bench/main.c $(LIBS) -lpthread
-
-##includes: $(INCS)
-##	for inc in $^; do \
-##		cp -u $${inc} $(INCDIR)/$(basename $(notdir $${inc}
 
 tests: $(TSTE)
 	err=0; \
@@ -46,17 +40,13 @@ tests: $(TSTE)
 	done; \
 	exit $$err
 	
-$(TSTE): $(TSTO) $(DEPT) | $(OBJS)
+$(TSTE): $(TSTO) | $(OBJS)
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $@ $(filter $(OBJDIR)/$(basename $(notdir $@))/$(basename $(notdir $@)).o,$(OBJS)) $(filter $(OBJDIR)/$(TSTDIR)/$(basename $(notdir $@)).o,$(TSTO)) $(LFLAGS)
+	$(CC) $(CFLAGS) -o $@ $(filter $(OBJDIR)/$(TSTDIR)/$(basename $(notdir $@)).o,$(TSTO)) $(OBJS) $(LFLAGS)
 
 $(OBJDIR)/$(TSTDIR)/%.o: $(TSTDIR)/%.c
 	@mkdir -p $(@D)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $< $(LFLAGS)
-
-$(OBJDIR)/$(TSTDIR)/%.d: $(TSTDIR)/%.c
-	@mkdir -p $(@D)
-	$(CC) -MM -MG $< $(CFLAGS)
 
 $(LIBS): $(OBJS)
 	@mkdir -p $(@D)
@@ -66,15 +56,11 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c | folders
 	@mkdir -p $(@D)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 
-$(OBJDIR)/%.d: $(SRCDIR)/%.c | folders
-	@mkdir -p $(@D)
-	$(CC) -MM -MG $< $(CFLAGS)
-
 .PHONY: folders
 folders:
-	mkdir -p $(DIRS)
+	@mkdir -p $(DIRS)
 	
 .PHONY: clean
 clean:
-	rm -rf $(DIRS)
+	@rm -rf $(DIRS)
 

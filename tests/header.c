@@ -12,6 +12,8 @@ int main() {
   headers_init(1);
   test_methods();
   test_routes();
+
+  printf("header success %s\n", "");
 }
 
 void test_routes() {
