@@ -61,8 +61,6 @@ void server_init() {
   client_fds = calloc(max_conns, sizeof(int *));
 }
 
-void server_options(server_opts opts) {}
-
 void server_construct() {}
 
 void *server_loop(void *client_id) {
