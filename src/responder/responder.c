@@ -2,7 +2,7 @@
 #include "../debug/debug.h"
 #include "stdlib.h"
 
-#define SUPPORTED_CODES 23
+#define SUPPORTED_CODES 24
 responder_t *defaults = NULL;
 int responder_len = 0;
 int responder_cap = SUPPORTED_CODES;
@@ -23,6 +23,7 @@ char *codes1[SUPPORTED_CODES] = {"HTTP/1.1 100 Continue\r\n",
                                  "HTTP/1.1 405 Method Not Allowed\r\n",
                                  "HTTP/1.1 409 Conflict\r\n",
                                  "HTTP/1.1 410 Gone\r\n",
+                                 "HTTP/1.1 413 Entity Too Large\r\n",
                                  "HTTP/1.1 418 Im A Teapot\r\n",
                                  "HTTP/1.1 429 Too Many Requests\r\n",
                                  "HTTP/1.1 500 Internal Server Error\r\n",
@@ -48,16 +49,15 @@ void responder_add_default(CODE code, char *header, char *body) {
   defaults[(int)code] = resp;
 }
 
-void responder_free(const responder_t * responder) {
-  if (responder->free_body == 1) {
-    free(responder->body);
+void responder_free(responder_t ** responder) {
+  if ((*responder)->free_body == 1) {
+    free((*responder)->body);
   }
-  if (responder->free_header == 1) {
-    free(responder->header);
+  if ((*responder)->free_header == 1) {
+    free((*responder)->header);
   }
 }
 
-void responder_get_default(CODE code, const responder_t ** responder) { 
+void responder_get_default(CODE code,responder_t ** responder) { 
   *responder = &defaults[(int)code]; 
-  debug_print("default %s\n", (*responder)->header);
 }
