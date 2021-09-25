@@ -1,4 +1,6 @@
 #include "./server.h"
+#include "../responder/responder.h"
+#include "../barista/barista.h"
 #include "../debug/debug.h"
 #include <errno.h>
 #include <fcntl.h>
@@ -15,7 +17,7 @@
 static struct sockaddr_in sa;
 static int socket_fd;
 static pthread_t *server_ids;
-static int max_conns = 990;
+static int max_conns = 10;
 static int *client_fds;
 
 void *handle_controller() { return NULL; }
@@ -53,7 +55,7 @@ void server_init() {
     exit(EXIT_FAILURE);
   }
 
-  if (listen(socket_fd, SOMAXCONN) == -1) {
+  if (listen(socket_fd, max_conns *= 2) == -1) {
     perror("listen failed");
     close(socket_fd);
     exit(EXIT_FAILURE);
@@ -79,10 +81,9 @@ void *server_loop(void *client_id) {
       while (1) {
         int rd = read(id, buf + buf_len, sizeof(buf));
         if (rd > 0) {
-          int wr = write(id,
-                         "HTTP/1.1 200 OK\r\nServer: "
-                         "caffeine\r\nContent-Length: 5\r\n\r\nHello",
-                         71);
+          responder_t *res;
+          barista_exec(*(int *)client_id, buf,rd, &res);
+          int wr = write(id,responder_get_raw(&res),responder_get_len(&res));
           if (wr == -1) {
             perror("write failed");
             break;

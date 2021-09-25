@@ -61,3 +61,27 @@ void responder_free(responder_t ** responder) {
 void responder_get_default(CODE code,responder_t ** responder) { 
   *responder = &defaults[(int)code]; 
 }
+char * responder_get_raw(responder_t **resp) {
+  responder_t * res = *resp;
+  if(res->fidelity == NF) {
+    return res->header;
+  }
+  else if(res->fidelity == LF) {
+    return res->
+  }
+  else {
+
+  }
+}
+int responder_get_len(responder_t **resp) {
+  responder_t * res = *resp;
+
+  if(res->fidelity == NF) {
+  }
+  else if(res->fidelity == LF) {
+
+  }
+  else {
+  
+  }
+}

@@ -34,7 +34,15 @@ typedef enum FIDELITY {
 } FIDELITY;
 
 typedef struct responder_t {
-  char *header;
+  char * raw_buf;
+  union {
+    char *header;
+    char ** dk_header;
+  };
+  union {
+    int header_len;
+    int * dk_header_len;
+  };  
   char *body;
   int free_body;
   int free_header;
@@ -57,3 +65,5 @@ responder_t responder_create_hf(CODE code, const int free_body,
                                 char *header, char *body);
 responder_t responder_lf_add_header(responder_t **resp, char *header);
 responder_t responder_hf_add_header(responder_t **resp, char *header);
+char * responder_get_raw(responder_t **resp);
+int responder_get_len(responder_t **resp);
