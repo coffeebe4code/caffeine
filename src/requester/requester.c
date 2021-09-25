@@ -24,7 +24,7 @@ void requester_reset(const int index) {
 }
 
 requester_t requester_get(int index) {
-  requester_t header = {
+  requester_t res = {
     .index = index,
     .route_start = route_starts[index],
     .route_end = route_ends[index],
@@ -32,7 +32,7 @@ requester_t requester_get(int index) {
     .buffer_len = lengths[index],
     .method = methods[index]
   };
-  return header;
+  return res;
 }
 
 void requester_go(int index, const char * buffer, const int buffer_len) {
