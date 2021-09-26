@@ -16,9 +16,9 @@ DIRS = $(OBJDIR) $(TGTDIR) $(INCDIR) $(LIBDIR)
 
 # Target name
 TGT = caffeine
-LLIST = utils requester responder server barista
+LLIST = server barista requester responder utils
 
-OBJS := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(wildcard $(SRCDIR)/*/*.c))
+OBJS := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(foreach LIB,$(LLIST),$(filter $(SRCDIR)/$(LIB)/$(LIB).c,$(wildcard $(SRCDIR)/*/*.c))))
 INCS := $(patsubst $(SRCDIR)/%.h,$(INCDIR)/%.h,$(wildcard $(SRCDIR)/*/*.h))
 IMMM := $(patsubst $(OBJDIR)/%.o,$(LIBDIR)/%.a,$(foreach LIB,$(LLIST),$(filter $(OBJDIR)/$(LIB)/$(LIB).o,$(OBJS))))
 LIBS := $(foreach PRE,$(LLIST),$(subst $(PRE)/,lib,$(filter $(LIBDIR)/$(PRE)/$(PRE).a,$(IMMM))))
