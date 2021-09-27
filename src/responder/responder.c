@@ -1,6 +1,7 @@
 #include "./responder.h"
 #include "../debug/debug.h"
 #include "stdlib.h"
+#include <string.h>
 
 #define SUPPORTED_CODES 24
 responder_t *defaults = NULL;
@@ -49,22 +50,21 @@ void responder_add_default(CODE code, char *header, char *body) {
   defaults[(int)code] = resp;
 }
 
-void responder_free(responder_t **responder) {
-  if ((*responder)->free_body == 1) {
-    free((*responder)->body);
+void responder_free(responder_t *responder) {
+  if (responder->free_body == 1) {
+    free(responder->body);
   }
-  if ((*responder)->free_header == 1) {
-    free((*responder)->header);
+  if (responder->free_header == 1) {
+    free(responder->header);
   }
 }
 
-void responder_get_default(CODE code, responder_t **responder) {
-  *responder = &defaults[(int)code];
+void responder_get_default(CODE code, responder_t *responder) {
+  memcpy(responder, &defaults[(int)code], sizeof(responder_t));
 }
-void responder_to_raw(responder_t **resp) {
-  responder_t *res = *resp;
-  if (res->fidelity == NF) {
-  } else if (res->fidelity == LF) {
+void responder_to_raw(responder_t *resp) {
+  if (resp->fidelity == NF) {
+  } else if (resp->fidelity == LF) {
   } else {
   }
 }
@@ -72,10 +72,10 @@ void responder_to_raw(responder_t **resp) {
 char *responder_code_text(CODE code) { return codes1[(int)code]; }
 
 responder_t responder_create_nf(const int free_header,
-                                char **buffer,
+                                char *buffer,
                                 const int len) {
   responder_t res = {.fidelity = NF,
-                     .raw_buf = *buffer,
+                     .raw_buf = buffer,
                      .free_body = 0,
                      .free_header = free_header,
                      .raw_len = len};
