@@ -1,5 +1,6 @@
 #include "./barista.h"
-#include "../../src/responder/responder.h"
+#include "../debug/debug.h"
+#include "../responder/responder.h"
 #include "stdlib.h"
 #include <string.h>
 
@@ -50,9 +51,11 @@ void barista_exec(const int index, const char *buffer,
   for (int i = 0; i < barista_len; i++) {
     if (likely(header.method == methods[i])) {
       int tocheck = header.route_end - header.route_start;
+
       const char *head_buf = header.header;
-      int equal = memcmp(&head_buf[header.route_start], routes[i], tocheck);
-      if (likely(equal)) {
+      int equal = memcmp(&head_buf[header.route_start], routes[i], ++tocheck);
+
+      if (likely(equal == 0)) {
         execs[i](header, responder);
         return;
       }

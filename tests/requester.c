@@ -21,6 +21,7 @@ void test_routes() {
   requester_go(0, "GET / HTTP/1.1\r\n", 16);
   requester_t val = requester_get(0);
   assert(val.route_end == 4);
+  assert(val.route_start == 4);
 
   requester_reset(0);
   requester_go(0, "GET /0000_0000_/ HTTP/1.1\r\n", 27);

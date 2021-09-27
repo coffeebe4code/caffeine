@@ -33,11 +33,11 @@ char *codes1[SUPPORTED_CODES] = {"HTTP/1.1 100 Continue\r\n",
                                  "HTTP/1.1 504 Gateway Timeout\r\n"};
 
 void responder_init() {
-    defaults = malloc(sizeof(responder_t) * responder_cap);
-    responder_len = responder_cap;
-    for(int i = 0; i < responder_len; i++) {
-      responder_add_default((CODE)i, codes1[i], "");
-    }
+  defaults = malloc(sizeof(responder_t) * responder_cap);
+  responder_len = responder_cap;
+  for (int i = 0; i < responder_len; i++) {
+    responder_add_default((CODE)i, codes1[i], "");
+  }
 }
 
 void responder_add_default(CODE code, char *header, char *body) {
@@ -49,7 +49,7 @@ void responder_add_default(CODE code, char *header, char *body) {
   defaults[(int)code] = resp;
 }
 
-void responder_free(responder_t ** responder) {
+void responder_free(responder_t **responder) {
   if ((*responder)->free_body == 1) {
     free((*responder)->body);
   }
@@ -58,16 +58,26 @@ void responder_free(responder_t ** responder) {
   }
 }
 
-void responder_get_default(CODE code,responder_t ** responder) { 
-  *responder = &defaults[(int)code]; 
+void responder_get_default(CODE code, responder_t **responder) {
+  *responder = &defaults[(int)code];
 }
 void responder_to_raw(responder_t **resp) {
-  responder_t * res = *resp;
-  if(res->fidelity == NF) {
+  responder_t *res = *resp;
+  if (res->fidelity == NF) {
+  } else if (res->fidelity == LF) {
+  } else {
   }
-  else if(res->fidelity == LF) {
-  }
-  else {
-  
-  }
+}
+
+char *responder_code_text(CODE code) { return codes1[(int)code]; }
+
+responder_t responder_create_nf(const int free_header,
+                                char **buffer,
+                                const int len) {
+  responder_t res = {.fidelity = NF,
+                     .raw_buf = *buffer,
+                     .free_body = 0,
+                     .free_header = free_header,
+                     .raw_len = len};
+  return res;
 }
