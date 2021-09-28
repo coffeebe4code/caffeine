@@ -81,10 +81,10 @@ void *server_loop(void *client_id) {
       while (1) {
         int rd = read(id, buf + buf_len, sizeof(buf));
         if (rd > 0) {
-          responder_t *res;
+          responder_t res;
           barista_exec(*(int *)client_id, buf,rd, &res);
           responder_to_raw(&res);
-          int wr = write(id,res->raw_buf,res->raw_len);
+          int wr = write(id,res.raw_buf,res.raw_len);
           if (wr == -1) {
             perror("write failed");
             break;

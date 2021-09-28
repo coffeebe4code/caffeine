@@ -18,11 +18,17 @@ void test_defaults() {
   responder_init();
   responder_t res;
   responder_get_default(_200_OK, &res);
-  assert(strcmp(res.header,"HTTP/1.1 200 OK\r\n") == 0);
+  
+  responder_to_raw(&res);
+  assert(strcmp(res.raw_buf,"HTTP/1.1 200 OK\r\n") == 0);
 
   responder_free(&res);
-  assert(strcmp(res.header,"HTTP/1.1 200 OK\r\n") == 0);
   
-  // Looks like I need to build the response correctly for default to add for customization
-  responder_add_default(_200_OK, "server = caffeine", "");
+  responder_t res2;
+  responder_add_default(_200_OK, "server = caffeine\r\n", "",19,0);
+  responder_get_default(_200_OK, &res2);
+  responder_to_raw(&res2);
+
+  assert(strcmp(res2.raw_buf,"HTTP/1.1 200 OK\r\nserver = caffeine\r\n") == 0);
+  assert(res2.raw_len == 36);
 }

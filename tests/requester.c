@@ -12,7 +12,7 @@ int main() {
   requester_init(1);
   test_methods();
   test_routes();
-
+  requester_free();
   printf("requester success %s\n", "");
 }
 

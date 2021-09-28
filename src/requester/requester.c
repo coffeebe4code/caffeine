@@ -35,7 +35,7 @@ requester_t requester_get(int index) {
   return res;
 }
 
-void requester_go(int index, const char * buffer, const int buffer_len) {
+void requester_go(int index, const char * buffer, const size_t buffer_len) {
   lengths[index] = buffer_len;
   headers[index] = buffer;
   parse_method(index);

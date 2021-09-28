@@ -1,5 +1,6 @@
 #pragma once
 #include "../requester/requester.h"
+#include <stdbool.h>
 
 typedef enum CODE {
   _100_Continue = 0,
@@ -37,21 +38,23 @@ typedef struct responder_t {
   char *raw_buf;
   int raw_len;
   union {
-    char *header;
-    char **dk_header;
+    char *headers;
+    char **dkv_header;
   };
   union {
     int header_len;
-    int *dk_header_len;
+    int *dkv_header_len;
   };
-  char *body;
-  int free_body;
-  int free_header;
+  char * body;
+  size_t body_len;
+  CODE code;
+  bool free_body;
+  bool free_header;
   FIDELITY fidelity;
 } responder_t;
 
 void responder_init();
-void responder_add_default(CODE code, char *header, char *buffer);
+void responder_add_default(CODE code, char *headers, char *body, size_t header_len, size_t body_len);
 void responder_free(responder_t *responder);
 void responder_get_default(CODE code, responder_t *responder);
 responder_t responder_create_lf(CODE code, const int free_body,
@@ -63,6 +66,7 @@ responder_t responder_create_hf(CODE code, const int free_body,
                                 const int free_header, const int keep_alive,
                                 char *header, char *body);
 char *responder_code_text(CODE code);
+int responder_code_size(CODE code);
 responder_t responder_lf_add_header(responder_t *resp, char *header);
 responder_t responder_hf_add_header(responder_t *resp, char *header);
 void responder_to_raw(responder_t *resp);
