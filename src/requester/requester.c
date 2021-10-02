@@ -10,14 +10,14 @@
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
 
-enum METHOD * methods;
+enum METHOD * req_methods;
 int * route_starts;
 int * route_ends;
 const char ** headers;
 int * lengths;
 
 void requester_reset(const int index) {
-  methods[index] = UNSUPPORTED;
+  req_methods[index] = UNSUPPORTED;
   route_starts[index] = 0;
   route_ends[index] = 0;
   lengths[index] = 0;
@@ -30,7 +30,7 @@ requester_t requester_get(int index) {
     .route_end = route_ends[index],
     .header = headers[index],
     .buffer_len = lengths[index],
-    .method = methods[index]
+    .method = req_methods[index]
   };
   return res;
 }
@@ -43,7 +43,7 @@ void requester_go(int index, const char * buffer, const size_t buffer_len) {
 }
 
 void requester_init(const int total_possible) {
-  methods = malloc(sizeof(enum METHOD) * total_possible);
+  req_methods = malloc(sizeof(enum METHOD) * total_possible);
   route_starts = malloc(sizeof(int) * total_possible);
   route_ends = malloc(sizeof(int) * total_possible);
   lengths = malloc(sizeof(int) * total_possible);
@@ -64,7 +64,7 @@ void parse_route_slow(int index) {
   if (end != NULL) {
     route_ends[index] = (int)(end - headers[index]) - 1;
   } else {
-    methods[index] = UNSUPPORTED;
+    req_methods[index] = UNSUPPORTED;
   }
 };
 
@@ -82,29 +82,29 @@ void parse_method_slow(int index) {
             if (unlikely(equal != 0)) {
               equal = memcmp(headers[index], opt, 4);
               if (unlikely(equal != 0)) {
-                methods[index] = UNSUPPORTED;
+                req_methods[index] = UNSUPPORTED;
               } else {
-                methods[index] = OPTIONS;
+                req_methods[index] = OPTIONS;
                 route_starts[index] = 8;
               }
             } else {
-              methods[index] = DELETE;
+              req_methods[index] = DELETE;
               route_starts[index] = 7;
             }
           } else {
-            methods[index] = PATCH;
+            req_methods[index] = PATCH;
             route_starts[index] = 6;
           }
         } else {
-          methods[index] = PUT;
+          req_methods[index] = PUT;
           route_starts[index] = 4;
         }
       } else {
-        methods[index] = POST;
+        req_methods[index] = POST;
         route_starts[index] = 5;
       }
     } else {
-      methods[index] = GET;
+      req_methods[index] = GET;
       route_starts[index] = 4;
     }
   }
@@ -212,7 +212,7 @@ void parse_route(const int index) {
 }
 
 void requester_free() {
-  free(methods);
+  free(req_methods);
   free(route_starts);
   free(route_ends);
   free(lengths);

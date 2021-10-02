@@ -7,7 +7,7 @@
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
 
-METHOD *methods;
+METHOD *bar_methods;
 char **routes;
 typedef void (*FUNCS)(requester_t, responder_t *);
 FUNCS *execs;
@@ -17,17 +17,17 @@ int barista_cap = 25;
 void barista_add(METHOD method, char *route,
                  void (*func)(requester_t,responder_t *)) {
   if (barista_len == 0) {
-    methods = malloc(sizeof(METHOD) * barista_cap);
+    bar_methods = malloc(sizeof(METHOD) * barista_cap);
     routes = malloc(sizeof(const char *) * barista_cap);
     execs = malloc(sizeof((*func)) * barista_cap);
   }
   if (barista_cap == barista_len) {
     barista_cap *= 2;
-    methods = realloc(methods, sizeof(METHOD) * barista_cap);
+    bar_methods = realloc(bar_methods, sizeof(METHOD) * barista_cap);
     routes = realloc((void *)routes, sizeof(const char *) * barista_cap);
     execs = realloc(execs, sizeof(FUNCS));
   }
-  methods[barista_len] = method;
+  bar_methods[barista_len] = method;
   char *ptr = malloc(sizeof(char) * strlen(route));
   strcpy(ptr, route);
   routes[barista_len] = ptr;
@@ -36,7 +36,7 @@ void barista_add(METHOD method, char *route,
 }
 
 void barista_free() {
-  free(methods);
+  free(bar_methods);
   free(execs);
   for (int i = 0; i < barista_len; i++) {
     free(routes[i]);
@@ -49,7 +49,7 @@ void barista_exec(const int index, const char *buffer,
   requester_go(index, buffer, buffer_len);
   requester_t header = requester_get(index);
   for (int i = 0; i < barista_len; i++) {
-    if (likely(header.method == methods[i])) {
+    if (likely(header.method == bar_methods[i])) {
       int tocheck = header.route_end - header.route_start;
 
       const char *head_buf = header.header;
