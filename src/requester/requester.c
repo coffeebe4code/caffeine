@@ -138,29 +138,29 @@ void parse_method_simd(const int index) {
             if (unlikely(!equal)) {
               equal = cmp((const __m128i *)opt, xmm0);
               if (unlikely(!equal)) {
-                methods[index] = UNSUPPORTED;
+                req_methods[index] = UNSUPPORTED;
               } else {
-                methods[index] = OPTIONS;
+                req_methods[index] = OPTIONS;
                 route_starts[index] = 8;
               }
             } else {
-              methods[index] = DELETE;
+              req_methods[index] = DELETE;
               route_starts[index] = 7;
             }
           } else {
-            methods[index] = PATCH;
+            req_methods[index] = PATCH;
             route_starts[index] = 6;
           }
         } else {
-          methods[index] = PUT;
+          req_methods[index] = PUT;
           route_starts[index] = 4;
         }
       } else {
-        methods[index] = POST;
+        req_methods[index] = POST;
         route_starts[index] = 5;
       }
     } else {
-      methods[index] = GET;
+      req_methods[index] = GET;
       route_starts[index] = 4;
     }
   }
@@ -189,7 +189,7 @@ void parse_route_simd(const int index, const char *buffer, const int buffer_len)
     if (end != NULL) {
       route_ends[index] = (int)(end - buffer) - 1;
     } else {
-      methods[index] = UNSUPPORTED;
+      req_methods[index] = UNSUPPORTED;
     }
   }
 }
