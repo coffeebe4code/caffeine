@@ -1,4 +1,5 @@
 #include "../src/server/server.h"
+#include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
 
@@ -7,4 +8,5 @@ void * test_shutdown() {
 }
 
 int main() {
+  printf("test success %s\n", "");
 }

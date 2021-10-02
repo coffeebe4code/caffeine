@@ -1,5 +1,7 @@
-name: gcc-perf-slow
+name: final-simd
 on:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 jobs:
@@ -8,4 +10,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: make
-      run: make -j4 -f gcc-perf-slow.mk
+      run: make -j4 -f final-simd.mk

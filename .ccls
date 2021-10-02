@@ -1,5 +1,0 @@
--Wall
--Wextra
--std=c11
--DDEBUG
--D__SIMD__
