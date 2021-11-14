@@ -111,6 +111,7 @@ void parse_method_slow(int index) {
 }
 #ifdef __SIMD__
 static inline int cmp(const __m128i *method, __m128i xmm0) {
+  printf("SIMD ON %s\n","");
   register __m128i xmm1, xmm2;
   register unsigned int eax;
 
@@ -171,7 +172,6 @@ void parse_route_simd(const int index, const char *buffer, const int buffer_len)
   int curr_index = route_starts[index];
   register __m128i xmm0, xmm1, xmm2;
   register unsigned int eax;
-  register unsigned char ebx;
   while (buffer_len - curr_index >= 16) {
     xmm0 = _mm_loadu_si128((const __m128i *)(buffer + curr_index));
     xmm1 = _mm_loadu_si128((const __m128i *)spaces);

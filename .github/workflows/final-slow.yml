@@ -9,5 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: cmake
+      run: cmake -S . -B build
     - name: make
-      run: make -j4 -f final-slow.mk
+      run: cd build && make
+    - name: tests
+      run: make test
