@@ -43,11 +43,12 @@ void responder_init() {
   defaults = malloc(sizeof(responder_t) * responder_cap);
   responder_len = responder_cap;
   for (int i = 0; i < responder_len; i++) {
-    responder_add_default((CODE)i, "", "",0,0);
+    responder_add_default((CODE)i, "", "", 0, 0);
   }
 }
 
-void responder_add_default(CODE code, char *headers, char *body, size_t header_len, size_t body_len) {
+void responder_add_default(CODE code, char *headers, char *body,
+                           size_t header_len, size_t body_len) {
   responder_t resp = {.headers = headers,
                       .body = body,
                       .header_len = header_len,
@@ -62,9 +63,10 @@ void responder_add_default(CODE code, char *headers, char *body, size_t header_l
 void responder_free(responder_t *responder) {
   switch (responder->fidelity) {
   case NF:
-    if(responder->free_body == 1) {
+    if (responder->free_body == 1) {
       free(responder->raw_buf);
     }
+    break;
   case LF: {
     if (responder->free_body == 1) {
       free(responder->body);
@@ -73,6 +75,7 @@ void responder_free(responder_t *responder) {
       free(responder->headers);
     }
     free(responder->raw_buf);
+    break;
   }
   case HF:
     break;
@@ -87,14 +90,15 @@ void responder_to_raw(responder_t *resp) {
   if (resp->fidelity == NF) {
     // don't do anything
   } else if (resp->fidelity == LF) {
-    resp->raw_len = resp->body_len + resp->header_len + codes_len1[(int)resp->code];
+    resp->raw_len =
+        resp->body_len + resp->header_len + codes_len1[(int)resp->code];
     resp->raw_buf = malloc(sizeof(char) * resp->raw_len);
     int code_len = codes_len1[(int)resp->code];
-    memcpy(resp->raw_buf,codes1[(int)resp->code], code_len);
-    memcpy(resp->raw_buf + code_len,resp->headers,resp->header_len);
-    memcpy(resp->raw_buf + code_len + resp->header_len,resp->body, resp->body_len);
+    memcpy(resp->raw_buf, codes1[(int)resp->code], code_len);
+    memcpy(resp->raw_buf + code_len, resp->headers, resp->header_len);
+    memcpy(resp->raw_buf + code_len + resp->header_len, resp->body,
+           resp->body_len);
   } else {
-  
   }
 }
 

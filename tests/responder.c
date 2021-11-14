@@ -31,4 +31,6 @@ void test_defaults() {
 
   assert(strcmp(res2.raw_buf,"HTTP/1.1 200 OK\r\nserver = caffeine\r\n") == 0);
   assert(res2.raw_len == 36);
+
+  responder_free(&res2);
 }

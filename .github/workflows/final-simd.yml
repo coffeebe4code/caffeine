@@ -9,5 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: make
-      run: make -j4 -f final-simd.mk
+    - name: cmake
+      run: |
+        cmake -DCMAKE_C_FLAGS="-D__SIMD__" -S . -B build
+        cd build
+        make
+        make test
+
