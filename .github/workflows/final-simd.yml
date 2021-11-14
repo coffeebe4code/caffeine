@@ -9,8 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: |
+    - name: cmake
+    - run: |
         cmake
         cd build
         make
         make test
+
