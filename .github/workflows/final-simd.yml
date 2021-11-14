@@ -9,9 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: cmake
-      run: cmake -DCMAKE_C_FLAGS="-D__SIMD__" -S . -B build 
-    - name: make
-      run: cd build && make
-    - name: tests
-      run: make test
+    - name: |
+        cmake
+        cd build
+        make
+        make test
