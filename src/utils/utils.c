@@ -1,5 +1,3 @@
 #include <stdio.h>
 
-int whatever() {
-  return 0;
-}
+int whatever() { return 0; }

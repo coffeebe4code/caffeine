@@ -45,7 +45,7 @@ typedef struct responder_t {
     int header_len;
     int *dkv_header_len;
   };
-  char * body;
+  char *body;
   size_t body_len;
   CODE code;
   bool free_body;
@@ -54,7 +54,8 @@ typedef struct responder_t {
 } responder_t;
 
 void responder_init();
-void responder_add_default(CODE code, char *headers, char *body, size_t header_len, size_t body_len);
+void responder_add_default(CODE code, char *headers, char *body,
+                           size_t header_len, size_t body_len);
 void responder_free(responder_t *responder);
 void responder_get_default(CODE code, responder_t *responder);
 responder_t responder_create_lf(CODE code, const int free_body,

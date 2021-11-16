@@ -1,0 +1,21 @@
+name: checks
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: clang format install
+      run: sudo apt install -y clang-format
+    - name: clang format
+      run: find ./src -name "*.c" -o -name "*.h"|xargs -I {} clang-format --Werror -i {}
+    - name: check
+      run: |
+        if [[ -z $(git status -s) ]] then
+          echo 'clang-format modified files. build failed. check the .github/workflows/checks.yml file'
+          exit 1
+        fi

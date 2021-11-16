@@ -15,7 +15,7 @@ int barista_len = 0;
 int barista_cap = 25;
 
 void barista_add(METHOD method, char *route,
-                 void (*func)(requester_t,responder_t *)) {
+                 void (*func)(requester_t, responder_t *)) {
   if (barista_len == 0) {
     bar_methods = malloc(sizeof(METHOD) * barista_cap);
     routes = malloc(sizeof(const char *) * barista_cap);
@@ -44,8 +44,8 @@ void barista_free() {
   free(routes);
 }
 
-void barista_exec(const int index, const char *buffer,
-                         const int buffer_len, responder_t * responder) {
+void barista_exec(const int index, const char *buffer, const int buffer_len,
+                  responder_t *responder) {
   requester_go(index, buffer, buffer_len);
   requester_t header = requester_get(index);
   for (int i = 0; i < barista_len; i++) {

@@ -10,11 +10,11 @@
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
 
-enum METHOD * req_methods;
-int * route_starts;
-int * route_ends;
-const char ** headers;
-int * lengths;
+enum METHOD *req_methods;
+int *route_starts;
+int *route_ends;
+const char **headers;
+int *lengths;
 
 void requester_reset(const int index) {
   req_methods[index] = UNSUPPORTED;
@@ -24,18 +24,16 @@ void requester_reset(const int index) {
 }
 
 requester_t requester_get(int index) {
-  requester_t res = {
-    .index = index,
-    .route_start = route_starts[index],
-    .route_end = route_ends[index],
-    .header = headers[index],
-    .buffer_len = lengths[index],
-    .method = req_methods[index]
-  };
+  requester_t res = {.index = index,
+                     .route_start = route_starts[index],
+                     .route_end = route_ends[index],
+                     .header = headers[index],
+                     .buffer_len = lengths[index],
+                     .method = req_methods[index]};
   return res;
 }
 
-void requester_go(int index, const char * buffer, const size_t buffer_len) {
+void requester_go(int index, const char *buffer, const size_t buffer_len) {
   lengths[index] = buffer_len;
   headers[index] = buffer;
   parse_method(index);
@@ -111,7 +109,7 @@ void parse_method_slow(int index) {
 }
 #ifdef __SIMD__
 static inline int cmp(const __m128i *method, __m128i xmm0) {
-  printf("SIMD ON %s\n","");
+  printf("SIMD ON %s\n", "");
   register __m128i xmm1, xmm2;
   register unsigned int eax;
 
@@ -167,7 +165,8 @@ void parse_method_simd(const int index) {
   }
 }
 
-void parse_route_simd(const int index, const char *buffer, const int buffer_len) {
+void parse_route_simd(const int index, const char *buffer,
+                      const int buffer_len) {
   int index_simd;
   int curr_index = route_starts[index];
   register __m128i xmm0, xmm1, xmm2;

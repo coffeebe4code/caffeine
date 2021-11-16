@@ -1,7 +1,7 @@
 #include "./server.h"
-#include "../responder/responder.h"
 #include "../barista/barista.h"
 #include "../debug/debug.h"
+#include "../responder/responder.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
@@ -82,9 +82,9 @@ void *server_loop(void *client_id) {
         int rd = read(id, buf + buf_len, sizeof(buf));
         if (rd > 0) {
           responder_t res;
-          barista_exec(*(int *)client_id, buf,rd, &res);
+          barista_exec(*(int *)client_id, buf, rd, &res);
           responder_to_raw(&res);
-          int wr = write(id,res.raw_buf,res.raw_len);
+          int wr = write(id, res.raw_buf, res.raw_len);
           if (wr == -1) {
             perror("write failed");
             break;
