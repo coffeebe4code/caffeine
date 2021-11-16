@@ -15,7 +15,8 @@ jobs:
       run: find ./src -name "*.c" -o -name "*.h"|xargs -I {} clang-format --Werror -i {}
     - name: check
       run: |
-        if [[ -z $(git status -s) ]] then
+        if [[ -z $(git status -s) ]] 
+        then
           echo 'clang-format modified files. build failed. check the .github/workflows/checks.yml file'
           exit 1
         fi
