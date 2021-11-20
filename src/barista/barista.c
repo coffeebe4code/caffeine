@@ -1,6 +1,6 @@
-#include "./barista.h"
 #include "../debug/debug.h"
 #include "../responder/responder.h"
+#include "./barista.h"
 #include "stdlib.h"
 #include <string.h>
 
@@ -19,7 +19,7 @@ void barista_add(METHOD method, char *route,
   if (barista_len == 0) {
     bar_methods = malloc(sizeof(METHOD) * barista_cap);
     routes = malloc(sizeof(const char *) * barista_cap);
-    execs = malloc(sizeof((*func)) * barista_cap);
+    execs = malloc(sizeof(FUNCS) * barista_cap);
   }
   if (barista_cap == barista_len) {
     barista_cap *= 2;

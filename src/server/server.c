@@ -1,7 +1,8 @@
-#include "./server.h"
+#include "../background/background.h"
 #include "../barista/barista.h"
 #include "../debug/debug.h"
 #include "../responder/responder.h"
+#include "./server.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
@@ -103,7 +104,7 @@ void *server_loop(void *client_id) {
 }
 
 void server_run() {
-  server_ids = (pthread_t *)malloc(max_conns * sizeof(pthread_t *));
+  server_ids = (pthread_t *)malloc(max_conns * sizeof(pthread_t));
 
   for (int i = 0; i < (max_conns); i++) {
     pthread_create(&server_ids[i], NULL, &server_loop, (void *)(&i));
@@ -115,6 +116,7 @@ void server_run() {
 
 void server_shutdown() {
   shutdown(socket_fd, SHUT_WR);
+  background_stop_and_shutdown();
   for (int i = 0; i < max_conns; i++) {
     pthread_cancel(server_ids[i]);
     if (client_fds[i] != 0 || client_fds[i] != -1) {
