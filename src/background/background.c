@@ -17,11 +17,18 @@ int bg_len = 0;
 int bg_cap = 25;
 static clock_t last_ran;
 
+void background_killer(int index) { pthread_cancel(proc_threads[index]); }
+
 void *background_handler(int index, double start) {
 
   starts[index] = start;
   successes[index] = 0;
-  raw_datas[index] = raw_datas[index] = bg_funcs[index](raw_datas[index]);
+  pthread_create(&proc_threads[index], NULL, bg_funcs[index], raw_datas[index]);
+  void *new;
+  pthread_join(proc_threads[index], &new);
+  if (new != PTHREAD_CANCELED) {
+    raw_datas[index] = new;
+  }
   successes[index] = 1;
   return NULL;
 }
@@ -31,9 +38,12 @@ void *background_loop(void *arg) {
     for (int i = 0; i < bg_len; i++) {
       double now = clock();
       double time = (double)(now - last_ran) / CLOCKS_PER_SEC;
-      if (time >= (delays[i] + now)) {
-
-        // TODO:: create a background handler
+      if (time >= delays[i]) {
+        if (starts[i] + 30000 < now && successes[i] == 0) {
+          background_killer(i);
+        } else if (successes[i] == 1) {
+          background_handler(i, now);
+        }
       }
     }
   }
