@@ -1,8 +1,8 @@
+#include "./server.h"
 #include "../background/background.h"
 #include "../barista/barista.h"
 #include "../debug/debug.h"
 #include "../responder/responder.h"
-#include "./server.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>

@@ -1,6 +1,6 @@
+#include "./barista.h"
 #include "../debug/debug.h"
 #include "../responder/responder.h"
-#include "./barista.h"
 #include "stdlib.h"
 #include <string.h>
 
