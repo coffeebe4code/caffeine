@@ -33,7 +33,7 @@ void *background_handler(int index, double start) {
   return NULL;
 }
 
-void *background_loop(void *arg) {
+void *background_loop() {
   for (;;) {
     for (int i = 0; i < bg_len; i++) {
       double now = clock();
