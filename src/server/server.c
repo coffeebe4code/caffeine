@@ -1,7 +1,9 @@
 #include "./server.h"
-#include "../responder/responder.h"
+#include "../background/background.h"
 #include "../barista/barista.h"
 #include "../debug/debug.h"
+#include "../responder/responder.h"
+#include "../utils/utils.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
@@ -19,6 +21,7 @@ static int socket_fd;
 static pthread_t *server_ids;
 static int max_conns = 10;
 static int *client_fds;
+const char *error = "Unable to allocate memory in barista process";
 
 void *handle_controller() { return NULL; }
 
@@ -61,6 +64,7 @@ void server_init() {
     exit(EXIT_FAILURE);
   }
   client_fds = calloc(max_conns, sizeof(int *));
+  check_pointer_throw(client_fds, error);
 }
 
 void server_construct() {}
@@ -82,9 +86,9 @@ void *server_loop(void *client_id) {
         int rd = read(id, buf + buf_len, sizeof(buf));
         if (rd > 0) {
           responder_t res;
-          barista_exec(*(int *)client_id, buf,rd, &res);
+          barista_exec(*(int *)client_id, buf, rd, &res);
           responder_to_raw(&res);
-          int wr = write(id,res.raw_buf,res.raw_len);
+          int wr = write(id, res.raw_buf, res.raw_len);
           if (wr == -1) {
             perror("write failed");
             break;
@@ -103,7 +107,8 @@ void *server_loop(void *client_id) {
 }
 
 void server_run() {
-  server_ids = (pthread_t *)malloc(max_conns * sizeof(pthread_t *));
+  server_ids = (pthread_t *)malloc(max_conns * sizeof(pthread_t));
+  check_pointer_throw(server_ids, error);
 
   for (int i = 0; i < (max_conns); i++) {
     pthread_create(&server_ids[i], NULL, &server_loop, (void *)(&i));
@@ -115,6 +120,7 @@ void server_run() {
 
 void server_shutdown() {
   shutdown(socket_fd, SHUT_WR);
+  background_stop_and_shutdown();
   for (int i = 0; i < max_conns; i++) {
     pthread_cancel(server_ids[i]);
     if (client_fds[i] != 0 || client_fds[i] != -1) {

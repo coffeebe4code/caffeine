@@ -19,12 +19,14 @@ add_library(server STATIC "")
 add_library(barista STATIC "")
 add_library(requester STATIC "")
 add_library(responder STATIC "")
+add_library(background STATIC "")
 
 add_subdirectory(src/utils)
 add_subdirectory(src/server)
 add_subdirectory(src/barista)
 add_subdirectory(src/requester)
 add_subdirectory(src/responder)
+add_subdirectory(src/background)
 
 add_subdirectory(tests)
 

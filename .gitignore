@@ -6,13 +6,8 @@ obj
 lib
 include
 *.swp
-CMakeFiles
-CMakeCache.txt
-**/Makefile
-**/cmake_install.cmake
-**/CTestTestfile.cmake
-Testing
 build
+
 # Prerequisites
 *.d
 
