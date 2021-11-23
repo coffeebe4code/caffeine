@@ -1,5 +1,5 @@
-#include "../utils/utils.h"
 #include "./background.h"
+#include "../utils/utils.h"
 #include "time.h"
 #include <pthread.h>
 #include <signal.h>

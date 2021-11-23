@@ -1,6 +1,6 @@
+#include "./requester.h"
 #include "../debug/debug.h"
 #include "../utils/utils.h"
-#include "./requester.h"
 #include <stdlib.h>
 #include <string.h>
 #ifdef __SIMD__

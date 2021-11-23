@@ -1,6 +1,6 @@
+#include "./responder.h"
 #include "../debug/debug.h"
 #include "../utils/utils.c"
-#include "./responder.h"
 #include "stdlib.h"
 #include <string.h>
 
