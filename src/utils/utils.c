@@ -1,3 +1,7 @@
 #include <stdio.h>
 
-int whatever() { return 0; }
+void check_pointer_throw(void *ptr, const char *message) {
+  if (ptr == NULL) {
+    puts(message);
+  }
+}

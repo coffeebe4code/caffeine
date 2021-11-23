@@ -71,3 +71,4 @@ int responder_code_size(CODE code);
 responder_t responder_lf_add_header(responder_t *resp, char *header);
 responder_t responder_hf_add_header(responder_t *resp, char *header);
 void responder_to_raw(responder_t *resp);
+void responder_cleanup();

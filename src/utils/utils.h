@@ -1,4 +1,3 @@
 #pragma once
 
-int whatever();
-int read_proc_int(char *path);
+void check_pointer_throw(void *ptr, const char *message);

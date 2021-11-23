@@ -1,5 +1,6 @@
-#include "./responder.h"
 #include "../debug/debug.h"
+#include "../utils/utils.c"
+#include "./responder.h"
 #include "stdlib.h"
 #include <string.h>
 
@@ -7,6 +8,7 @@
 responder_t *defaults = NULL;
 int responder_len = 0;
 int responder_cap = SUPPORTED_CODES;
+const char *error = "Unable to allocate memory in responder process";
 
 char *codes1[SUPPORTED_CODES] = {"HTTP/1.1 100 Continue\r\n",
                                  "HTTP/1.1 101 Switching Protocol\r\n",
@@ -41,6 +43,7 @@ int codes_len1[SUPPORTED_CODES] = {
 
 void responder_init() {
   defaults = malloc(sizeof(responder_t) * responder_cap);
+  check_pointer_throw(defaults, error);
   responder_len = responder_cap;
   for (int i = 0; i < responder_len; i++) {
     responder_add_default((CODE)i, "", "", 0, 0);
@@ -114,3 +117,4 @@ responder_t responder_create_nf(const int free_header, char *buffer,
                      .raw_len = len};
   return res;
 }
+void responder_cleanup() { free(defaults); }

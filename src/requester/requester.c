@@ -1,5 +1,6 @@
-#include "./requester.h"
 #include "../debug/debug.h"
+#include "../utils/utils.h"
+#include "./requester.h"
 #include <stdlib.h>
 #include <string.h>
 #ifdef __SIMD__
@@ -15,6 +16,8 @@ int *route_starts;
 int *route_ends;
 const char **headers;
 int *lengths;
+
+const char *error = "Unable to allocate memory in requester process";
 
 void requester_reset(const int index) {
   req_methods[index] = UNSUPPORTED;
@@ -42,10 +45,15 @@ void requester_go(int index, const char *buffer, const size_t buffer_len) {
 
 void requester_init(const int total_possible) {
   req_methods = malloc(sizeof(enum METHOD) * total_possible);
+  check_pointer_throw(req_methods, error);
   route_starts = malloc(sizeof(int) * total_possible);
+  check_pointer_throw(route_starts, error);
   route_ends = malloc(sizeof(int) * total_possible);
+  check_pointer_throw(route_ends, error);
   lengths = malloc(sizeof(int) * total_possible);
+  check_pointer_throw(lengths, error);
   headers = malloc(sizeof(char *) * total_possible);
+  check_pointer_throw(headers, error);
 }
 
 const char get[16] __attribute__((aligned(16))) = "GET ";

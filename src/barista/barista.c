@@ -1,6 +1,7 @@
-#include "./barista.h"
 #include "../debug/debug.h"
 #include "../responder/responder.h"
+#include "../utils/utils.h"
+#include "./barista.h"
 #include "stdlib.h"
 #include <string.h>
 
@@ -13,19 +14,26 @@ typedef void (*FUNCS)(requester_t, responder_t *);
 FUNCS *execs;
 int barista_len = 0;
 int barista_cap = 25;
+const char *error = "Unable to allocate memory in barista process";
 
 void barista_add(METHOD method, char *route,
                  void (*func)(requester_t, responder_t *)) {
   if (barista_len == 0) {
     bar_methods = malloc(sizeof(METHOD) * barista_cap);
+    check_pointer_throw(bar_methods, error);
     routes = malloc(sizeof(const char *) * barista_cap);
+    check_pointer_throw(routes, error);
     execs = malloc(sizeof(FUNCS) * barista_cap);
+    check_pointer_throw(execs, error);
   }
   if (barista_cap == barista_len) {
     barista_cap *= 2;
     bar_methods = realloc(bar_methods, sizeof(METHOD) * barista_cap);
+    check_pointer_throw(bar_methods, error);
     routes = realloc((void *)routes, sizeof(const char *) * barista_cap);
+    check_pointer_throw(routes, error);
     execs = realloc(execs, sizeof(FUNCS));
+    check_pointer_throw(execs, error);
   }
   bar_methods[barista_len] = method;
   char *ptr = malloc(sizeof(char) * strlen(route));
